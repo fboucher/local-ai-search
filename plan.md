@@ -74,6 +74,25 @@ local-ai-search/
 3. **Reka API** - Review API docs for image analysis endpoint and rate limits
 4. **Thumbnail caching** - Determine best approach (local cache folder)
 
+## API Call example
+
+Here an example with a URL `image_url` and `video_ur`. For a video the parameter become `image` and `video`. ANd the prompt is pass with `text`.
+
+```
+curl http://192.169.2.11:8000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "reka-edge-2603",
+    "messages": [{
+      "role": "user",
+      "content": [
+        {"type": "image_url", "image_url": {"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Cat03.jpg/1200px-Cat03.jpg"}},
+        {"type": "text", "text": "Describe this image in detail."}
+      ]
+    }]
+  }'
+```
+
 ## Open Questions
 
 - [ ] Should thumbnails be generated upfront or on-demand?

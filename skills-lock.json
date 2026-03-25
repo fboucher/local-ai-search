@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "skills": {
+    "consistent-lexicon": {
+      "source": "fboucher/skills",
+      "sourceType": "github",
+      "computedHash": "4dbc5ba8deb07df2727b5333d5a63e972fe0427aa6e63a849814033e4be6531b"
+    },
+    "grill-me": {
+      "source": "fboucher/skills",
+      "sourceType": "github",
+      "computedHash": "6bf74bdad02bd178699800cbf2524d46cc9725d2ad15b650535e418a6b1adf12"
+    },
+    "prd-to-issues": {
+      "source": "fboucher/skills",
+      "sourceType": "github",
+      "computedHash": "32192340c1a14317b25741f5a0a38d162b387b6d4bfd09e0ed3859367321e98f"
+    },
+    "write-a-prd": {
+      "source": "fboucher/skills",
+      "sourceType": "github",
+      "computedHash": "b1ed25840fb37f0c911a5a62c44a2aaa66b43f965b7d37d1e59c407d23de5d7a"
+    }
+  }
+}

@@ -101,3 +101,23 @@ src/
 **Why:** NETSDK1139 error — `linux` is not a recognized .NET platform identifier. For Uno Skia Linux support, the TFM is simply `net10.0`.
 **Branch:** squad/2-project-bootstrap
 **Commit:** fix: correct Linux TFM — net10.0-linux → net10.0 (Uno Skia)
+
+## 2026-03-26: maccatalyst dropped — Skia chosen for Mac + Linux desktop
+**Source:** Frank (no Xcode, no maccatalyst)
+**What:** `net10.0-maccatalyst` removed. `net10.0` (Skia) now covers both macOS and Linux desktop.
+**Why:** Frank doesn't have Xcode. `net10.0-maccatalyst` requires the Xcode toolchain. Uno's Skia renderer (`Uno.WinUI.Skia.Desktop`) gives cross-platform desktop on Mac and Linux without it.
+
+**Final TFMs:**
+- `net10.0-windows10.0.19041` — Windows (WinUI)
+- `net10.0` — Mac + Linux (Uno Skia Desktop)
+
+**Changes made:**
+- Removed `net10.0-maccatalyst` from `TargetFrameworks`
+- Added `Uno.WinUI.Skia.Desktop 5.*` conditioned on `'$(TargetFramework)' == 'net10.0'`
+- Added `Program.cs` with `#if !WINDOWS` guard — Skia desktop host entry point (fixes CS5001)
+- XAML codegen (`InitializeComponent`) flows from `Uno.WinUI` unconditionally + Skia package for the `net10.0` TFM (fixes CS0103)
+
+**Key learnings:**
+- Mac + Linux Skia desktop = `net10.0` TFM (generic), no Xcode needed
+- `net10.0` Skia needs `Uno.WinUI.Skia.Desktop` package + a `Program.cs` `Main` entry point
+- WinUI Windows target auto-generates its entry point; Skia target does not — must provide `Program.cs`

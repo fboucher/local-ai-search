@@ -45,3 +45,21 @@
 - Frank needs to run `dotnet restore` and `dotnet build`
 - Verify app launches on macOS (maccatalyst target)
 - Once verified, merge to main/dev and proceed to Slice #2 (Database)
+
+### 2026-03-26 — Project Refactoring: src/ folder & .NET 10 upgrade
+
+**Branch:** `squad/2-project-bootstrap` (additional commits)
+**What changed:**
+- **Frank's directive:** Source code now lives under `src/` folder at repo root
+- **Layout:** `src/LocalAiSearch/` contains the Uno Platform project, `LocalAiSearch.sln` remains at root
+- **Framework bump:** All target frameworks upgraded from `net8.0-*` to `net10.0-*`
+  - net10.0-windows10.0.19041
+  - net10.0-ios
+  - net10.0-android
+  - net10.0-maccatalyst
+- **Rationale:** .NET 10 is current LTS (released Nov 2025), better choice than .NET 8 for new projects
+- **PRD note:** PRD was written assuming .NET 8, but team upgraded to .NET 10
+
+**Git operations:**
+- Used `git mv` to preserve history when relocating files
+- Updated solution file to reference `src\LocalAiSearch\LocalAiSearch.csproj`

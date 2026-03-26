@@ -82,6 +82,40 @@
 
 ---
 
+### 3. Source Folder and .NET 10 Framework
+
+**Date:** 2026-03-26  
+**Author:** Frank (directive) + Rusty (implementation)  
+**Status:** Implemented
+
+**Decision:** Source code relocated to `src/` folder; target framework upgraded to .NET 10.
+
+**Context:**
+- Frank's explicit user directive for repository structure
+- .NET 10 released Nov 2025, current LTS better suited for new projects than .NET 8
+
+**Approach:**
+1. Relocated source folder: `LocalAiSearch/` → `src/LocalAiSearch/`
+2. Updated solution file to reference `src\LocalAiSearch\LocalAiSearch.csproj`
+3. Upgraded all target frameworks: `net8.0-*` → `net10.0-*`
+   - net10.0-windows10.0.19041
+   - net10.0-ios
+   - net10.0-android
+   - net10.0-maccatalyst
+4. Preserved git history using `git mv` during relocation
+
+**Rationale:**
+- Frank's directive establishes clear repository layout convention
+- .NET 10 LTS provides better long-term support and features than .NET 8
+- Cross-platform targets maintained across all relocations
+
+**Impact:**
+- ✅ Repository follows established src/ convention
+- ✅ Project targets current .NET LTS
+- ✅ All 4 platform targets updated consistently
+
+---
+
 ## Governance
 
 - All meaningful changes require team consensus

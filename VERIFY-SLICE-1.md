@@ -6,7 +6,7 @@
 ---
 
 ## Prerequisites
-- .NET 8 SDK installed
+- .NET 10 SDK installed
 - Git repository cloned
 - Terminal open in project root
 
@@ -17,7 +17,7 @@
 ### 1. Fetch and checkout the Slice #1 branch
 ```bash
 git fetch origin
-git checkout slice-1-bootstrap
+git checkout squad/2-project-bootstrap
 ```
 **Success:** Branch checked out without errors.  
 **Maps to:** Setup for all criteria
@@ -62,9 +62,8 @@ dotnet build
 
 ### 6. Run the application
 ```bash
-dotnet run --project <ProjectName>/<ProjectName>.csproj
+dotnet run --project src/LocalAiSearch/LocalAiSearch.csproj
 ```
-*(Replace `<ProjectName>` with the actual project folder/file discovered in step 2)*
 
 **Success:** Application window launches. You see the UI with the content from MainPage.xaml rendered.  
 **Maps to:** ✅ "App launches on at least one platform for verification"

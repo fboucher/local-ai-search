@@ -121,3 +121,50 @@ src/
 - Mac + Linux Skia desktop = `net10.0` TFM (generic), no Xcode needed
 - `net10.0` Skia needs `Uno.WinUI.Skia.Desktop` package + a `Program.cs` `Main` entry point
 - WinUI Windows target auto-generates its entry point; Skia target does not — must provide `Program.cs`
+
+## 2026-03-26: Fix — Correct Uno Skia NuGet package for net10.0
+
+**Branch:** `squad/2-project-bootstrap`
+**Commit:** `fix: correct Uno Skia package reference for net10.0 desktop`
+
+**Problem:** `Uno.WinUI.Skia.Desktop` does not exist on NuGet — restore was failing.
+
+**What actually exists on NuGet (as of 5.6.99/5.7.0-dev):**
+| Package | Notes |
+|---|---|
+| `Uno.WinUI.Skia.Gtk` | GTK renderer, works on Linux + macOS (GTK3 required) |
+| `Uno.WinUI.Skia.Wpf` | WPF renderer, Windows only |
+| `Uno.WinUI.Skia.Linux.FrameBuffer` | Framebuffer renderer, Linux embedded |
+| `Uno.UI.Skia.MacOS` | Native macOS renderer |
+| `Uno.UI.Skia.X11` | X11 renderer |
+
+**There is no `Uno.WinUI.Skia.Desktop`.** The previous assumption was wrong.
+
+**Correct entry point API (Uno.WinUI.Runtime.Skia.Gtk, 5.6.99):**
+```csharp
+using Uno.UI.Runtime.Skia.Gtk;
+new GtkHost(() => new App()).Run();
+```
+- NOT `SkiaHostBuilder` — that class does not exist in Uno 5.6.99
+- NOT `UseDesktop()` — comes from the non-existent package
+- `GtkHost` is in `Uno.UI.Runtime.Skia.Gtk` namespace (provided by `Uno.WinUI.Skia.Gtk`)
+
+**XAML source generator pattern (IsUnoHead):**
+```xml
+<!-- Triggers Uno XAML codegen (InitializeComponent) for non-Windows TFMs -->
+<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">
+  <IsUnoHead>true</IsUnoHead>
+</PropertyGroup>
+<ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">
+  <Page Include="**/*.xaml" Exclude="obj/**/*.xaml" />
+</ItemGroup>
+```
+- `IsUnoHead=true` tells Uno MSBuild tasks to run source generators
+- `<Page>` items feed XAML files to the generator as AdditionalFiles
+- Must be conditioned on non-Windows to avoid type conflicts with Windows SDK
+
+**Build result after fix:**
+- `dotnet restore` ✅ passes
+- `net10.0` build ✅ succeeds (1 informational warning: App.xaml should call InitializeComponent)
+- `net10.0-windows10.0.19041` ❌ 2 errors — pre-existing; Uno 5.6.99 has no `net10.0-windows` support, needs Windows-side fix (WinAppSDK or net9.0 downgrade)
+

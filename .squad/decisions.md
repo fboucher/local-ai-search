@@ -88,31 +88,35 @@
 **Author:** Frank (directive) + Rusty (implementation)  
 **Status:** Implemented
 
-**Decision:** Source code relocated to `src/` folder; target framework upgraded to .NET 10.
+**Decision:** Source code relocated to `src/` folder; target framework upgraded to .NET 10. Solution file moved into `src/` to align with repo-wide convention: code artifacts in `src/`, config-only at root.
 
 **Context:**
 - Frank's explicit user directive for repository structure
 - .NET 10 released Nov 2025, current LTS better suited for new projects than .NET 8
+- Clarification: .sln file should also live in src/ per Frank's update directive
 
 **Approach:**
 1. Relocated source folder: `LocalAiSearch/` → `src/LocalAiSearch/`
-2. Updated solution file to reference `src\LocalAiSearch\LocalAiSearch.csproj`
-3. Upgraded all target frameworks: `net8.0-*` → `net10.0-*`
+2. Moved solution file: `LocalAiSearch.sln` → `src/LocalAiSearch.sln`
+3. Updated solution file to reference `src\LocalAiSearch\LocalAiSearch.csproj`
+4. Upgraded all target frameworks: `net8.0-*` → `net10.0-*`
    - net10.0-windows10.0.19041
    - net10.0-ios
    - net10.0-android
    - net10.0-maccatalyst
-4. Preserved git history using `git mv` during relocation
+5. Preserved git history using `git mv` during relocation
 
 **Rationale:**
 - Frank's directive establishes clear repository layout convention
 - .NET 10 LTS provides better long-term support and features than .NET 8
 - Cross-platform targets maintained across all relocations
+- Moving .sln into src/ clarifies artifact organization: repo root becomes purely configuration
 
 **Impact:**
 - ✅ Repository follows established src/ convention
 - ✅ Project targets current .NET LTS
 - ✅ All 4 platform targets updated consistently
+- ✅ Clear separation: code in src/, configuration at root
 
 ---
 

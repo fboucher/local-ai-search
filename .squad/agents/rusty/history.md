@@ -63,3 +63,16 @@
 **Git operations:**
 - Used `git mv` to preserve history when relocating files
 - Updated solution file to reference `src\LocalAiSearch\LocalAiSearch.csproj`
+
+## 2026-03-26: src/ directive clarification
+**Source:** Frank (user directive)
+**Context:** Frank wants the solution file inside src/ too - all code and solution artifacts must be under src/. The repo root should only contain config files (like README, .gitignore, etc.). This is the complete layout policy.
+
+**Layout implemented:**
+```
+src/
+  LocalAiSearch.sln     ← solution file moved here
+  LocalAiSearch/
+    LocalAiSearch.csproj
+```
+

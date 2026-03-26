@@ -14,8 +14,10 @@
 
 ## Learnings
 
-### 2025-01 — Slice #1 HITL Planning
-- Established clear HITL pattern: team builds autonomously, Frank verifies on hardware
+### 2026-03-26 — Slice #1 HITL Planning
+- ✅ Completed: Reviewed issue #2 requirements
+- ✅ Completed: Designed HITL collaboration plan with 4 phases and handoff points
+- ✅ Completed: Documented in `.squad/decisions.md` (merged from inbox)
 - Key insight: Platform verification (Uno on macOS) is the only genuine blocker for Frank
 - Collaboration flow: Rusty scaffolds → Bertha reviews → Frank verifies → Linus accepts
-- Decision documented in `.squad/decisions/inbox/bertha-slice1-hitl-plan.md`
+- Next: Review PR #10 for architecture alignment before Frank's HITL phase

@@ -190,3 +190,50 @@ new GtkHost(() => new App()).Run();
 **Key learnings:**
 - Final TFM decision: `net10.0` only (single TFM for all platforms via Skia/GTK)
 - Uno 5.6.99 does not support net10.0-windows WinUI; Skia/GTK works on Windows via net10.0
+
+### 2026-03-26 — Slice #2: Database Foundation
+
+**Branch:** `squad/3-database-foundation`
+**PR:** https://github.com/fboucher/local-ai-search/pull/12
+**Status:** ✅ Completed (Ready for review)
+
+**What I built:**
+- `MediaItem.cs` model in `src/LocalAiSearch/Models/`:
+  - All properties: Id, FilePath, FileHash, Description, Tags, MediaType, FileSizeBytes, CreatedAt, UpdatedAt, IsTagged
+  - Tags stored as comma-separated string (no JSON complexity)
+- `DatabaseService.cs` in `src/LocalAiSearch/Services/`:
+  - Constructor accepts dbPath (default: `./local.db`)
+  - Internal constructor accepts SqliteConnection for test isolation
+  - `InitializeAsync()` creates `media_items` table with indexes on file_hash and tags
+  - Full CRUD: `GetAllAsync()`, `GetByIdAsync()`, `GetByHashAsync()`, `InsertAsync()`, `UpdateAsync()`, `SearchAsync()`
+  - LIKE search on description and tags fields
+- `LocalAiSearch.Tests` project in `src/LocalAiSearch.Tests/`:
+  - xUnit test project targeting `net10.0` only
+  - `DatabaseServiceTests.cs` with 9 passing tests
+  - In-memory SQLite for test isolation (each test gets its own connection)
+  - Tests cover: init, insert, getById, getByHash, update, search by description, search by tags, getAll
+
+**Technology choices:**
+- **Microsoft.Data.Sqlite** (not Turso/libsql) — local-only SQLite, no cloud needed
+- **Plain ADO.NET** (no ORM) — keeps it simple for this app size
+- **Tags as comma-separated string** — simpler than JSON, works fine with LIKE search
+- **Internal constructor** for test isolation — allows passing in-memory connection while keeping public API clean
+
+**Key learnings:**
+- SQLite in-memory databases (`:memory:`) require the connection to stay open for the entire test lifecycle — otherwise the db disappears
+- Used `InternalsVisibleTo` in csproj to expose internal constructor to test project
+- `RETURNING id` clause in INSERT works on SQLite 3.35+, which is what .NET 10 ships with
+- DateTime stored as ISO 8601 strings (`ToString("O")`) for simplicity
+
+**File paths:**
+- `src/LocalAiSearch/Models/MediaItem.cs`
+- `src/LocalAiSearch/Services/DatabaseService.cs`
+- `src/LocalAiSearch.Tests/DatabaseServiceTests.cs`
+- `src/LocalAiSearch/LocalAiSearch.csproj` (added Microsoft.Data.Sqlite + InternalsVisibleTo)
+- `src/LocalAiSearch.Tests/LocalAiSearch.Tests.csproj` (xUnit test project)
+
+**Next steps:**
+- Slice #4: Image Viewer (Livingston's domain)
+- Slice #5: Folder Scanner (uses DatabaseService to check for duplicates via GetByHashAsync)
+- Slice #6: AI Tagging (updates MediaItem.Description and Tags via UpdateAsync)
+

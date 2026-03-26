@@ -13,7 +13,11 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("LocalAiSearch")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
+<<<<<<< HEAD
 [assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bf47f3ccb7f268e64871844226416e540f514af4")]
+=======
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+70b862d9b86812be179b056147ac23d353b51a08")]
+>>>>>>> origin/squad/5-folder-scanner
 [assembly: System.Reflection.AssemblyProductAttribute("LocalAiSearch")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LocalAiSearch")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

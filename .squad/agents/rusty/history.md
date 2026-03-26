@@ -86,7 +86,7 @@ src/
 **Target frameworks:**
 - net10.0-windows10.0.19041 (Windows desktop)
 - net10.0-maccatalyst (macOS desktop)
-- net10.0-linux (Linux desktop)
+- net10.0 (Linux/Skia/GTK desktop)
 
 **Removed:**
 - net10.0-ios
@@ -94,3 +94,10 @@ src/
 
 **Branch:** squad/2-project-bootstrap
 **Commit:** refactor: desktop-only targets — remove iOS/Android, add Linux
+
+## 2026-03-26: Linux TFM correction — net10.0-linux → net10.0
+**Source:** Frank (NETSDK1139 error fix)
+**What:** `net10.0-linux` is not a valid .NET TFM. Uno Platform uses `net10.0` (generic) for Linux/Skia/GTK desktop.
+**Why:** NETSDK1139 error — `linux` is not a recognized .NET platform identifier. For Uno Skia Linux support, the TFM is simply `net10.0`.
+**Branch:** squad/2-project-bootstrap
+**Commit:** fix: correct Linux TFM — net10.0-linux → net10.0 (Uno Skia)

@@ -9,6 +9,10 @@
     <IsUnoHead>true</IsUnoHead>
   </PropertyGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="LocalAiSearch.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.5" />
     <PackageReference Include="Uno.WinUI" Version="5.*" />
     <PackageReference Include="Uno.Extensions.Hosting" Version="*" />
     <PackageReference Include="Uno.WinUI.Skia.Gtk" Version="5.*" />

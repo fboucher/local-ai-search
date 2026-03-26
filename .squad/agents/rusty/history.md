@@ -168,3 +168,25 @@ new GtkHost(() => new App()).Run();
 - `net10.0` build ✅ succeeds (1 informational warning: App.xaml should call InitializeComponent)
 - `net10.0-windows10.0.19041` ❌ 2 errors — pre-existing; Uno 5.6.99 has no `net10.0-windows` support, needs Windows-side fix (WinAppSDK or net9.0 downgrade)
 
+
+## 2026-03-26: Single net10.0 TFM — Skia/GTK on all platforms
+
+**Branch:** `squad/2-project-bootstrap`
+**Commit:** `fix: single net10.0 TFM — Skia renderer on all platforms`
+
+**Frank's directive:** One TFM only — `net10.0`. Skia/GTK renderer on Windows, Mac, and Linux.
+
+**What changed:**
+- `<TargetFrameworks>` → `<TargetFramework>net10.0</TargetFramework>` (singular, no semicolons)
+- Removed `<EnableWindowsTargeting>true</EnableWindowsTargeting>`
+- Removed all `Condition` blocks based on `$(TargetFramework.Contains('-windows'))` or platform identifier
+- `IsUnoHead`, `<Page>` items, and `Uno.WinUI.Skia.Gtk` are now unconditional
+- `Program.cs` — removed `#if !WINDOWS` / `#else` / `#endif` guards; just plain `GtkHost(() => new App()).Run()`
+
+**Build result:**
+- `dotnet restore` ✅ clean
+- `dotnet build` ✅ succeeded with 1 warning (pre-existing Uno0006: App.xaml.cs should call InitializeComponent)
+
+**Key learnings:**
+- Final TFM decision: `net10.0` only (single TFM for all platforms via Skia/GTK)
+- Uno 5.6.99 does not support net10.0-windows WinUI; Skia/GTK works on Windows via net10.0

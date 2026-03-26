@@ -8,12 +8,19 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
+  <!-- Skia/non-Windows: enable Uno XAML source generators and declare Page items -->
+  <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">
+    <IsUnoHead>true</IsUnoHead>
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Uno.WinUI" Version="5.*" />
     <PackageReference Include="Uno.Extensions.Hosting" Version="*" />
   </ItemGroup>
-  <!-- Skia desktop renderer for net10.0 (Mac + Linux, no Xcode needed) -->
+  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">
+    <Page Include="**/*.xaml" Exclude="obj/**/*.xaml" />
+  </ItemGroup>
+  <!-- Skia desktop renderer for net10.0 (Mac + Linux via GTK) -->
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
-    <PackageReference Include="Uno.WinUI.Skia.Desktop" Version="5.*" />
+    <PackageReference Include="Uno.WinUI.Skia.Gtk" Version="5.*" />
   </ItemGroup>
 </Project>

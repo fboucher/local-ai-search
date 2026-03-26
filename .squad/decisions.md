@@ -119,6 +119,9 @@
 - ✅ Clear separation: code in src/, configuration at root
 
 ---
+## Active Decisions
+
+No decisions recorded yet.
 
 ## Governance
 

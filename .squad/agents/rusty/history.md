@@ -76,3 +76,21 @@ src/
     LocalAiSearch.csproj
 ```
 
+- Mac cross-platform fix: `<EnableWindowsTargeting>true</EnableWindowsTargeting>` required in .csproj when targeting net*-windows from macOS
+
+## 2026-03-26: Desktop-only platform scope
+**Source:** Frank (user directive)
+**What:** App targets Linux, Mac, Windows desktop only. Removed iOS and Android from TargetFrameworks.
+**Why:** Frank explicitly does not need mobile support.
+
+**Target frameworks:**
+- net10.0-windows10.0.19041 (Windows desktop)
+- net10.0-maccatalyst (macOS desktop)
+- net10.0-linux (Linux desktop)
+
+**Removed:**
+- net10.0-ios
+- net10.0-android
+
+**Branch:** squad/2-project-bootstrap
+**Commit:** refactor: desktop-only targets — remove iOS/Android, add Linux

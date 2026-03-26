@@ -5,12 +5,14 @@ namespace LocalAiSearch.Models;
 /// </summary>
 public class MediaItem
 {
-    // TODO: Implement per PRD spec
-    // - Id (Guid)
-    // - FilePath (string)
-    // - Description (string, AI-generated)
-    // - MediaType (enum: Image/Video)
-    // - Tags (List<string>, AI-generated)
-    // - FileHash (string, SHA256)
-    // - CreatedAt, UpdatedAt (DateTimeOffset)
+    public int Id { get; set; }
+    public string FilePath { get; set; } = string.Empty;
+    public string FileHash { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public string Tags { get; set; } = string.Empty;
+    public string MediaType { get; set; } = string.Empty;
+    public long FileSizeBytes { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+    public bool IsTagged { get; set; }
 }

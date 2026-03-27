@@ -143,3 +143,19 @@
 - Slice #9 (Theming) ready to merge in parallel
 - Combined, Slices #7-9 complete the rescan/progress/theming stack
 
+
+### 2026-06-13: ImageImportService Tests Written
+- ✅ **Branch:** `squad/add-images-manual-import` (committed as 851700f)
+- **Service under test:** `ImageImportService` — imports file paths into DB, deduplicates by SHA256 hash, filters unsupported extensions, sets `IsTagged=false`
+- **Pattern:** In-memory SQLite via `DatabaseService(SqliteConnection)` constructor; real temp files with unique content (JPEG header + counter bytes) so each file hashes distinctly
+- **Key fix:** `CreateTempImageFile` appends `BitConverter.GetBytes(++_fileCounter)` so all files get unique SHA256 hashes; without this, identical content → same hash → duplicate detection fires
+- **Cleanup:** `List<string> _tempFiles` + `Dispose()` deletes temp files; `SqliteConnection` disposed in same method
+- **Tests written (7):**
+  1. `ImportAsync_WithNewImages_ReturnsCorrectAddedCount` — 3 distinct files → Added=3, Skipped=0
+  2. `ImportAsync_WithDuplicateHash_SkipsSilently` — same file twice → second call Added=0, Skipped=1
+  3. `ImportAsync_WithUnsupportedExtension_CountsAsUnsupported` — `.raw` + `.txt` → Unsupported=2
+  4. `ImportAsync_WithMixedFiles_ReturnsCorrectCounts` — 2 new + 1 duplicate + 1 unsupported → Added=2, Skipped=1, Unsupported=1
+  5. `ImportAsync_NewImage_IsStoredInDatabase` — `GetAllAsync()` returns the imported item
+  6. `ImportAsync_NewImage_IsNotTagged` — `IsTagged=false` confirmed via DB read-back
+  7. `ImportAsync_WithEmptyList_ReturnsZeros` — empty input → 0/0/0, no exception
+- **Total test suite after:** 46 passing (39 prior + 7 new)

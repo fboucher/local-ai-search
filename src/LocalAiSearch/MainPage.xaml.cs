@@ -1,5 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using LocalAiSearch.Services;
 using LocalAiSearch.ViewModels;
 
 namespace LocalAiSearch;
@@ -14,7 +15,8 @@ public sealed partial class MainPage : Page
     public MainPage()
     {
         InitializeComponent();
-        ViewModel = new MainViewModel();
+        var filePicker = new FilePickerService();
+        ViewModel = new MainViewModel(new DatabaseService(), filePicker);
     }
     
     private void OnThumbnailSelected(object sender, SelectionChangedEventArgs e)

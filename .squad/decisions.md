@@ -348,6 +348,43 @@ DatabaseService was already implemented using `Microsoft.Data.Sqlite` but the pa
 - All code uses net10.0 TFM, async/await patterns, proper folder structure
 - No ThemeResource issues found (avoiding known GTK failure pattern)
 
+### 7. Bertha Final Review — Slices #7 & #8 Merge (Round 2)
+
+**Date:** 2026-03-27  
+**Reviewer:** Bertha  
+**PRs:** #16 (Rescan & Progress) and #17 (Dark/light theming)  
+**Status:** ✅ Both merged to `dev` via squash
+
+**PR #16 — feat: Slice #7 & #8 — Rescan & Progress Service**
+- Branch: `squad/8-rescan-progress` → `dev`
+- Authors: Rusty (implementation) + Linus (tests)
+- ✅ `ScanProgressService.cs` orchestrates scanner → tagger in sequence
+- ✅ `IProgress<ScanProgress>` pattern with nullability handled correctly
+- ✅ `CancellationToken` threaded through `RunAsync`, loop checks, OperationCanceledException re-thrown properly
+- ✅ `MainViewModel`: RescanCommand, CancelScanCommand, IsScanning, progress properties
+- ✅ Layer separation: service has no XAML, ViewModel has no filesystem calls
+- ✅ 6 new tests by Linus, all 39 tests passing on branch
+- ✅ Dual-constructor pattern on MainViewModel is clean DI design
+- ✅ PR targets `dev`, issue #8 closed
+
+**PR #17 — feat: Slice #9 — Dark/Light Theming**
+- Branch: `squad/9-theming` → `dev`
+- Author: Livingston
+- ✅ `App.xaml` has `ThemeDictionaries` with `Light` and `Dark` keys (explicit inline)
+- ✅ 11 custom `AppXxx` brush keys per theme, NOT relying on WinUI built-ins
+- ✅ `App.xaml.cs`: `Frame.RequestedTheme` set on `OnLaunched` from `Application.RequestedTheme`
+- ✅ `MainPage.xaml`: all hardcoded colors replaced with `{ThemeResource AppXxx}` references
+- ✅ `ApplicationPageBackgroundThemeBrush` absent — GTK layout bug avoided
+- ✅ Layout integrity preserved, no new structural elements
+- ✅ 0 errors, 0 warnings
+- ✅ PR targets `dev`, issue #9 closed
+
+**Dev Branch Final State:**
+- `dotnet build` → Success. 0 warnings, 0 errors
+- `dotnet test` → Passed! 39 tests, 0 failures
+- Slices complete: Bootstrap + DB + Scanner + Image Viewer + AI Tagging + Search + Rescan & Progress + Theming
+- All 8 critical slices merged and tested
+
 ---
 
 ## Governance

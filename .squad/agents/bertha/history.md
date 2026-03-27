@@ -69,3 +69,18 @@
   - Build: 0 errors, 0 warnings; Tests: 46/46 passing on branch and post-merge on dev
   - No dedicated GitHub issue — feature designed in-session, no issue to close
 - Dev branch final state: 46/46 tests, 0 errors, 0 warnings
+
+### 2026-06-14 — Image AI Analysis Feature Design
+- ✅ Completed: Designed image analysis feature based on Frank's question about how to process images
+- Key findings from codebase exploration:
+  - Existing `AiTaggingService` is tightly coupled to Reka API with hardcoded OpenAI-compatible format
+  - DB schema already has `description`, `tags`, `media_type`, `is_tagged` columns — no changes needed
+  - `ParseAiResponse()` method is reusable for any backend that returns structured text
+  - Current app imports images by file path with SHA256 hash dedup, but no AI processing occurs
+- Design decisions:
+  - Recommended Ollama + `llava:7b` over OpenAI for privacy/cost (matches Frank's local-first preference)
+  - Proposed `IImageAnalysisService` interface for backend abstraction (strategy pattern)
+  - Recommended per-image "Analyze" button UX (Frank wants cherry-pick control)
+  - No DB schema changes required for v1 — existing columns sufficient
+- Artifacts: `.squad/decisions/inbox/bertha-image-analysis-design.md`
+- Awaiting Frank's approval on: Ollama assumption, model choice (llava vs moondream), batch capability scope

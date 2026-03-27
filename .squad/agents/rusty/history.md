@@ -345,3 +345,11 @@ dotnet run
 - `src/LocalAiSearch/ViewModels/MainViewModel.cs`
 
 **Tests:** 46/46 passed. Zero build warnings/errors.
+
+### 2026-03-27 — Cross-Agent Brief: Image Analysis Backend & DB Schema
+
+**Finding (Bertha design work):** DB already has `description`, `tags`, `is_tagged` columns + AiTaggingService exists with `ParseAiResponse()` method.
+
+**User directive (Frank):** AI backend is **local OpenAI-compatible endpoint at 192.168.2.11:8000/v1** (not Ollama, not cloud). Use OpenAI .NET SDK with custom BaseUrl.
+
+**Implication for Rusty:** Future image analysis feature will use `IImageAnalysisService` interface with backend-specific implementations. Can reuse existing `ParseAiResponse()` parsing logic. Images stored on disk only; DB stores file path.

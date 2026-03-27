@@ -309,3 +309,11 @@ var files = await picker.PickMultipleFilesAsync();
 
 - `NativeFileDialogExtendedSharp` (NSOpenPanel) requires `NSApplication` to be initialized — does NOT work in Uno GTK apps on macOS. `Nfd.PickFolder()` returns error/cancel silently with no UI shown.
 - `osascript -e "POSIX path of (choose folder)"` is the correct cross-process macOS folder picker. Works from GTK, terminal, any process — no NSApplication, no GSettings, no dependencies. Returns a POSIX path with trailing slash (e.g. `/Users/frank/Pictures/`). Use `output.Trim().TrimEnd('/')` for a clean path. If user cancels, osascript exits with code 1 and empty output — `string.IsNullOrEmpty(path)` handles gracefully.
+
+### 2026-03-27 — Cross-Agent Brief: Image Analysis Backend & DB Schema
+
+**Finding (Bertha design work):** DB already has `description`, `tags`, `is_tagged` columns + AiTaggingService exists with `ParseAiResponse()` method.
+
+**User directive (Frank):** AI backend is **local OpenAI-compatible endpoint at 192.168.2.11:8000/v1** (not Ollama, not cloud). Use OpenAI .NET SDK with custom BaseUrl.
+
+**Implication for Livingston:** Future image analysis feature will expose "Analyze" button in image details panel (per-image, user-controlled). Design uses `IImageAnalysisService` interface for backend abstraction. Images stored on disk; DB stores file path only.

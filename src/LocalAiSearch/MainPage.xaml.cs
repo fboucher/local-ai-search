@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using NativeFileDialogExtendedSharp;
 using LocalAiSearch.Services;
 using LocalAiSearch.ViewModels;
 
@@ -31,11 +30,30 @@ public sealed partial class MainPage : Page
         AddImagesBtn.Click += (_, _) => ShowAddImagesPanel();
         BrowseFolderBtn.Click += async (_, _) =>
         {
-            var result = Nfd.PickFolder();
-            if (result.Status == NfdStatus.Ok && result.Path is string path)
+            try
             {
-                FolderPathBox.Text = path;
-                RefreshImageList(path);
+                var psi = new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = "osascript",
+                    Arguments = "-e \"POSIX path of (choose folder)\"",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+                using var process = System.Diagnostics.Process.Start(psi)!;
+                var output = await process.StandardOutput.ReadToEndAsync();
+                await process.WaitForExitAsync();
+                var path = output.Trim().TrimEnd('/');
+                if (!string.IsNullOrEmpty(path))
+                {
+                    FolderPathBox.Text = path;
+                    RefreshImageList(path);
+                }
+            }
+            catch (Exception ex)
+            {
+                await Console.Error.WriteLineAsync($"[Browse] osascript error: {ex.Message}");
             }
         };
         CancelAddImagesBtn.Click += (_, _) => HideAddImagesPanel();

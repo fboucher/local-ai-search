@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "X2NzfrLSg0E=",
+  "dgSpecHash": "B9vUtQFPVrI=",
   "success": true,
   "projectFilePath": "/Users/frank/dev/local-ai-search/src/LocalAiSearch/LocalAiSearch.csproj",
   "expectedPackageFiles": [
@@ -47,7 +47,6 @@
     "/Users/frank/.nuget/packages/microsoft.extensions.options.configurationextensions/9.0.9/microsoft.extensions.options.configurationextensions.9.0.9.nupkg.sha512",
     "/Users/frank/.nuget/packages/microsoft.extensions.primitives/9.0.9/microsoft.extensions.primitives.9.0.9.nupkg.sha512",
     "/Users/frank/.nuget/packages/microsoft.win32.systemevents/9.0.0/microsoft.win32.systemevents.9.0.0.nupkg.sha512",
-    "/Users/frank/.nuget/packages/nativefiledialogextendedsharp/0.1.0/nativefiledialogextendedsharp.0.1.0.nupkg.sha512",
     "/Users/frank/.nuget/packages/pangosharp/3.24.24.38/pangosharp.3.24.24.38.nupkg.sha512",
     "/Users/frank/.nuget/packages/silk.net.core/2.16.0/silk.net.core.2.16.0.nupkg.sha512",
     "/Users/frank/.nuget/packages/silk.net.maths/2.16.0/silk.net.maths.2.16.0.nupkg.sha512",

@@ -831,17 +831,6 @@
           }
         }
       },
-      "NativeFileDialogExtendedSharp/0.1.0": {
-        "type": "package",
-        "compile": {
-          "lib/net6.0/NativeFileDialogExtendedSharp.dll": {},
-          "lib/net6.0/nfd.dll": {}
-        },
-        "runtime": {
-          "lib/net6.0/NativeFileDialogExtendedSharp.dll": {},
-          "lib/net6.0/nfd.dll": {}
-        }
-      },
       "PangoSharp/3.24.24.38": {
         "type": "package",
         "dependencies": {
@@ -2548,19 +2537,6 @@
         "useSharedDesignerContext.txt"
       ]
     },
-    "NativeFileDialogExtendedSharp/0.1.0": {
-      "sha512": "a80SfWNBLdWqx8krjBqE0VBjd5u76lBZbeHeQwbHk6kuKXz1xveC/njlzw55dCFu0r3pxiPlbv1NhFlF0tCzlA==",
-      "type": "package",
-      "path": "nativefiledialogextendedsharp/0.1.0",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "lib/net6.0/NativeFileDialogExtendedSharp.dll",
-        "lib/net6.0/nfd.dll",
-        "nativefiledialogextendedsharp.0.1.0.nupkg.sha512",
-        "nativefiledialogextendedsharp.nuspec"
-      ]
-    },
     "PangoSharp/3.24.24.38": {
       "sha512": "NpTRGMOJvxJwRIEXV0hyAnFt26mLYwGu70TLCZecXwWgdQx87HWsAUWgzjL8atdExquebSBumKP6cZjkEAQuaA==",
       "type": "package",
@@ -3404,7 +3380,6 @@
   "projectFileDependencyGroups": {
     "net10.0": [
       "Microsoft.Data.Sqlite >= *",
-      "NativeFileDialogExtendedSharp >= 0.1.0",
       "Uno.Extensions.Hosting >= *",
       "Uno.WinUI >= 5.*",
       "Uno.WinUI.Skia.Gtk >= 5.*"
@@ -3456,10 +3431,6 @@
           "Microsoft.Data.Sqlite": {
             "target": "Package",
             "version": "[*, )"
-          },
-          "NativeFileDialogExtendedSharp": {
-            "target": "Package",
-            "version": "[0.1.0, )"
           },
           "Uno.Extensions.Hosting": {
             "target": "Package",

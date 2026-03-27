@@ -58,3 +58,14 @@
   - 33/33 tests passing, 0 errors, 0 warnings
 - Dev branch now has all 8 slices: Bootstrap + DB + Scanner + Image Viewer + AI Tagging + Search + Rescan + Theming
 - Final dev state: 39/39 tests, 0 errors, 0 warnings
+
+### 2026-06-13 — Add Images PR #18 Review & Merge
+- ✅ Completed: Reviewed and merged PR #18 (Add Images — manual file picker with dedup and status)
+  - ImageImportService: SHA256 dedup via `GetByHashAsync`, `ImportResult(Added, Skipped, Unsupported)` record, CancellationToken support
+  - IFilePickerService: clean interface abstraction — ViewModel holds interface, platform `FilePickerService` instantiated in code-behind only
+  - AddImagesCommand: properly awaits `PickImagesAsync()` → `ImportAsync()` → `LoadImagesAsync()` in sequence
+  - StatusMessage: auto-clears after 4s via `ClearStatusAfterDelayAsync`, `StatusMessageVisibility` computed without XAML converter
+  - 7 new tests by Linus (ImageImportServiceTests): all dedup, extension filtering, DB persistence cases covered
+  - Build: 0 errors, 0 warnings; Tests: 46/46 passing on branch and post-merge on dev
+  - No dedicated GitHub issue — feature designed in-session, no issue to close
+- Dev branch final state: 46/46 tests, 0 errors, 0 warnings

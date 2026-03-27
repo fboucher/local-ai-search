@@ -317,3 +317,31 @@ var files = await picker.PickMultipleFilesAsync();
 **User directive (Frank):** AI backend is **local OpenAI-compatible endpoint at 192.168.2.11:8000/v1** (not Ollama, not cloud). Use OpenAI .NET SDK with custom BaseUrl.
 
 **Implication for Livingston:** Future image analysis feature will expose "Analyze" button in image details panel (per-image, user-controlled). Design uses `IImageAnalysisService` interface for backend abstraction. Images stored on disk; DB stores file path only.
+
+### Per-Image Analyze Button — 2026-06-XX
+
+**Feature added:** "🔍 Analyze" button in right-panel metadata section (detail panel).
+
+**Changes Made:**
+
+**MainPage.xaml:**
+- Added `<Button x:Name="AnalyzeBtn" IsEnabled="False" HorizontalAlignment="Stretch">` at the top of the Metadata StackPanel (Grid.Row="2" in the right panel). Contains emoji + "Analyze" label via inner StackPanel.
+- Description and Tags TextBlocks were already present and bound to `ViewModel.SelectedItem.Description` / `ViewModel.SelectedItem.Tags` with `FallbackValue='—'`.
+
+**MainPage.xaml.cs:**
+- Added `AnalyzeBtn.Click` handler in constructor: calls `ViewModel.AnalyzeImageAsync(ViewModel.SelectedItem)` using null-check pattern matching.
+- Updated `OnThumbnailSelected`: sets `AnalyzeBtn.IsEnabled = true` when item is selected, `false` otherwise. This is the GTK-safe enable/disable approach (code-behind, not binding to converter).
+
+**MainViewModel.cs:**
+- Added `public virtual Task AnalyzeImageAsync(MediaItemViewModel item)` stub that sets StatusMessage = "Analysis not yet available." and clears after delay. Marked `virtual` so Rusty's implementation can override or replace without conflict.
+
+**MediaItemViewModel.cs:**
+- No changes needed — `Description` and `Tags` are already plain settable properties (not pass-through).
+
+**Patterns:**
+- Button disabled by default (`IsEnabled="False"` in XAML), enabled in `OnThumbnailSelected` code-behind — avoids need for converter or IValueConverter on GTK.
+- `virtual` stub method on ViewModel allows Rusty to override without breaking existing wiring.
+- StatusMessage feedback path already works — no extra binding needed after analysis.
+
+**Build Result:** ✅ 0 errors, 0 warnings  
+**Commit:** 4680f91 on dev

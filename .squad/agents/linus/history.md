@@ -14,10 +14,15 @@
 
 ## Learnings
 
-### 2026-03-26: Slice #1 Verification Guide Created
-- ✅ **Completed:** VERIFY-SLICE-1.md in project root
-- **Purpose:** Step-by-step verification checklist for GitHub issue #2 (Project Bootstrap)
-- **Coverage:** All 5 acceptance criteria from issue #2 mapped to executable verification steps
-- **Format:** Numbered steps with exact commands, expected outputs, and pass/fail sign-off
-- **Target User:** Frank (developer-level verification, Mac platform)
-- **Next:** After Frank completes HITL verification, confirm all acceptance criteria met and mark slice complete
+### 2026-06-12: Slice #6 — AiTaggingService Tests Written
+- ✅ **Branch:** `squad/6-ai-tagging-service` (committed alongside Rusty's implementation)
+- **Pattern:** In-memory SQLite via `DatabaseService(SqliteConnection)` constructor — same as DatabaseServiceTests
+- **Stub mode:** Pass no endpoint URL to `AiTaggingService` constructor; avoids HTTP calls entirely
+- **File helpers:** `WriteTestImage()` writes minimal valid PNG bytes to `AppContext.BaseDirectory`; `SeedItemAsync()` inserts a `MediaItem` and returns it with `Id` populated
+- **InternalsVisibleTo:** Added `<InternalsVisibleTo Include="LocalAiSearch.Tests" />` to LocalAiSearch.csproj so `AiTaggingService.ParseAiResponse` (internal) is callable from tests
+- **CapturingHttpHandler:** New file-scoped test helper that records the request body for asserting Base64 data URL structure sent to AI endpoint
+- **Tests added (3 new on top of Rusty's 8):**
+  - `TagAllUnprocessedAsync_WithMultipleItems_ProcessesAll` — verifies all 3 untagged items tagged, DB state confirmed
+  - `TagImageAsync_WithEndpoint_SendsBase64DataUrl` — verifies `data:...;base64,...` format in HTTP payload
+  - `ParseAiResponse_IsCaseInsensitive_ForFieldLabels` — edge case: lowercase field labels still parse correctly
+- **Total test suite after:** 33 passing (0 failing, 0 skipped)

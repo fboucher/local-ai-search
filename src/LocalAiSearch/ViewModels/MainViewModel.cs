@@ -19,6 +19,8 @@ public class MainViewModel : INotifyPropertyChanged
 {
     private readonly DatabaseService _db;
     private readonly ScanProgressService _scanProgress;
+    private readonly ImageImportService _imageImport;
+    private readonly IFilePickerService? _filePicker;
     private CancellationTokenSource? _searchCts;
     private CancellationTokenSource? _scanCts;
 
@@ -28,6 +30,7 @@ public class MainViewModel : INotifyPropertyChanged
     private bool _sortAscending = false;
     private string _selectedMediaType = "All";
     private bool _isEmpty;
+    private string _statusMessage = string.Empty;
     private bool _isScanning;
     private string _scanProgressText = string.Empty;
     private string _currentScanFile = string.Empty;
@@ -166,14 +169,39 @@ public class MainViewModel : INotifyPropertyChanged
     public ICommand LoadMoreCommand { get; }
     public ICommand RescanCommand { get; }
     public ICommand CancelScanCommand { get; }
+    public ICommand AddImagesCommand { get; }
 
-    public MainViewModel() : this(new DatabaseService())
+    public string StatusMessage
+    {
+        get => _statusMessage;
+        private set
+        {
+            if (_statusMessage != value)
+            {
+                _statusMessage = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(StatusMessageVisibility));
+            }
+        }
+    }
+
+    /// <summary>Drives status bar visibility without requiring a XAML converter.</summary>
+    public Visibility StatusMessageVisibility =>
+        string.IsNullOrEmpty(_statusMessage) ? Visibility.Collapsed : Visibility.Visible;
+
+    public MainViewModel() : this(new DatabaseService(), (IFilePickerService?)null)
     {
     }
 
-    public MainViewModel(DatabaseService db)
+    public MainViewModel(DatabaseService db) : this(db, (IFilePickerService?)null)
+    {
+    }
+
+    public MainViewModel(DatabaseService db, IFilePickerService? filePicker)
     {
         _db = db;
+        _filePicker = filePicker;
+        _imageImport = new ImageImportService(db);
         var scanner = new FolderScannerService(db);
         var tagger = new AiTaggingService(db);
         _scanProgress = new ScanProgressService(scanner, tagger);
@@ -182,18 +210,22 @@ public class MainViewModel : INotifyPropertyChanged
         LoadMoreCommand = new RelayCommand(() => { });
         RescanCommand = new RelayCommand(() => _ = StartRescanAsync(), () => !_isScanning);
         CancelScanCommand = new RelayCommand(() => _scanCts?.Cancel(), () => _isScanning);
+        AddImagesCommand = new RelayCommand(() => _ = AddImagesAsync());
         _ = LoadImagesAsync();
     }
 
     public MainViewModel(DatabaseService db, ScanProgressService scanProgressService)
     {
         _db = db;
+        _filePicker = null;
+        _imageImport = new ImageImportService(db);
         _scanProgress = scanProgressService;
         DisplayedItems = new ObservableCollection<MediaItemViewModel>();
         SortToggleCommand = new RelayCommand(ToggleSort);
         LoadMoreCommand = new RelayCommand(() => { });
         RescanCommand = new RelayCommand(() => _ = StartRescanAsync(), () => !_isScanning);
         CancelScanCommand = new RelayCommand(() => _scanCts?.Cancel(), () => _isScanning);
+        AddImagesCommand = new RelayCommand(() => _ = AddImagesAsync());
         _ = LoadImagesAsync();
     }
 
@@ -263,6 +295,32 @@ public class MainViewModel : INotifyPropertyChanged
             _sortAscending = !_sortAscending;
         }
         _ = LoadImagesAsync();
+    }
+
+    private async Task AddImagesAsync()
+    {
+        if (_filePicker == null) return;
+
+        IReadOnlyList<string> paths;
+        try { paths = await _filePicker.PickImagesAsync(); }
+        catch { return; }
+
+        if (paths.Count == 0) return;
+
+        var result = await _imageImport.ImportAsync(paths);
+        await LoadImagesAsync();
+
+        StatusMessage = result.Added > 0
+            ? $"{result.Added} image(s) added"
+            : "No new images added";
+
+        _ = ClearStatusAfterDelayAsync();
+    }
+
+    private async Task ClearStatusAfterDelayAsync()
+    {
+        await Task.Delay(4000);
+        StatusMessage = string.Empty;
     }
 
     public async Task LoadImagesAsync(bool debounce = false)

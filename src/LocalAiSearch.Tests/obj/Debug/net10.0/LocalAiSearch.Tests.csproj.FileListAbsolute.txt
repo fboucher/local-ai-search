@@ -219,3 +219,6 @@
 /Users/frank/dev/local-ai-search/src/LocalAiSearch.Tests/obj/Debug/net10.0/LocalAiSearch.Tests.pdb
 /Users/frank/dev/local-ai-search/src/LocalAiSearch.Tests/obj/Debug/net10.0/LocalAiSearch.Tests.genruntimeconfig.cache
 /Users/frank/dev/local-ai-search/src/LocalAiSearch.Tests/obj/Debug/net10.0/ref/LocalAiSearch.Tests.dll
+/Users/frank/dev/local-ai-search/src/LocalAiSearch.Tests/bin/Debug/net10.0/OpenAI.dll
+/Users/frank/dev/local-ai-search/src/LocalAiSearch.Tests/bin/Debug/net10.0/System.ClientModel.dll
+/Users/frank/dev/local-ai-search/src/LocalAiSearch.Tests/bin/Debug/net10.0/System.Memory.Data.dll

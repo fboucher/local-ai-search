@@ -407,6 +407,10 @@
               "target": "Package",
               "version": "[*, )"
             },
+            "OpenAI": {
+              "target": "Package",
+              "version": "[2.9.1, )"
+            },
             "Uno.Extensions.Hosting": {
               "target": "Package",
               "version": "[*, )"

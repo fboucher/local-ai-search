@@ -3,6 +3,7 @@ using System.Text.Json;
 using LocalAiSearch.Models;
 using OpenAI;
 using OpenAI.Chat;
+using System.ClientModel;
 
 namespace LocalAiSearch.Services;
 

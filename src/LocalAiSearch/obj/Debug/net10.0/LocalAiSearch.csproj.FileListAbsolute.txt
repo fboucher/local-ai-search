@@ -133,3 +133,6 @@
 /Users/frank/dev/local-ai-search/src/LocalAiSearch/obj/Debug/net10.0/LocalAiSearch.pdb
 /Users/frank/dev/local-ai-search/src/LocalAiSearch/obj/Debug/net10.0/LocalAiSearch.genruntimeconfig.cache
 /Users/frank/dev/local-ai-search/src/LocalAiSearch/obj/Debug/net10.0/ref/LocalAiSearch.dll
+/Users/frank/dev/local-ai-search/src/LocalAiSearch/bin/Debug/net10.0/OpenAI.dll
+/Users/frank/dev/local-ai-search/src/LocalAiSearch/bin/Debug/net10.0/System.ClientModel.dll
+/Users/frank/dev/local-ai-search/src/LocalAiSearch/bin/Debug/net10.0/System.Memory.Data.dll

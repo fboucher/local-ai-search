@@ -293,22 +293,6 @@ public class MainViewModel : INotifyPropertyChanged
     /// <summary>
     /// Analyzes a single image using the AI service. Implementation added by Rusty.
     /// </summary>
-    public virtual Task AnalyzeImageAsync(MediaItemViewModel item)
-    {
-        StatusMessage = "Analysis not yet available.";
-        _ = ClearStatusAfterDelayAsync();
-        return Task.CompletedTask;
-    }
-
-    public async Task ImportImagesAsync(IReadOnlyList<string> paths)
-    {
-        if (paths.Count == 0) return;
-        var result = await _imageImport.ImportAsync(paths);
-        StatusMessage = $"Added {result.Added}, skipped {result.Skipped} duplicate(s).";
-        await LoadImagesAsync();
-        _ = ClearStatusAfterDelayAsync();
-    }
-
     public async Task AnalyzeImageAsync(MediaItemViewModel item)
     {
         StatusMessage = "Analyzing…";
@@ -323,6 +307,15 @@ public class MainViewModel : INotifyPropertyChanged
         {
             StatusMessage = $"Analysis failed: {ex.Message}";
         }
+        _ = ClearStatusAfterDelayAsync();
+    }
+
+    public async Task ImportImagesAsync(IReadOnlyList<string> paths)
+    {
+        if (paths.Count == 0) return;
+        var result = await _imageImport.ImportAsync(paths);
+        StatusMessage = $"Added {result.Added}, skipped {result.Skipped} duplicate(s).";
+        await LoadImagesAsync();
         _ = ClearStatusAfterDelayAsync();
     }
 

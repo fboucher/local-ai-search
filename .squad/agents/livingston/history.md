@@ -298,3 +298,9 @@ var files = await picker.PickMultipleFilesAsync();
 **Commit:** 4cbe246 on dev
 - Built GTK-safe folder browser using only Button + ScrollViewer + StackPanel controls
 - Quick-access shortcuts + drillable subfolder list replace any native OS folder picker
+
+## Native Folder Picker (NativeFileDialogExtendedSharp)
+
+- `NativeFileDialogExtendedSharp` NuGet package calls NSOpenPanel on macOS directly — bypasses GTK file chooser and GSettings requirement entirely. Use for any native folder/file picking in Uno GTK apps.
+- The GTK file chooser (and FileOpenPicker via InitializeWithWindow) both fail on macOS due to GSettings. NativeFileDialogExtendedSharp is the correct cross-platform solution.
+- **API details (verified from assembly metadata):** namespace is `NativeFileDialogExtendedSharp`, static class is `Nfd` (not `NFD`, not `Dialog`). Method: `Nfd.PickFolder()` returns `NfdDialogResult` with `.Status` (NfdStatus.Ok/Cancel/Error) and `.Path`.

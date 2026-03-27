@@ -1,11 +1,242 @@
 <Page x:Class="LocalAiSearch.MainPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      Background="White">
+      xmlns:vm="using:LocalAiSearch.ViewModels"
+      Background="{ThemeResource AppBackground}">
   <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-    <TextBlock Text="Local AI Search"
-               HorizontalAlignment="Center"
-               VerticalAlignment="Center"
-               FontSize="24" />
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="2*"/>
+      <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
+    
+    <!-- Left Panel: Thumbnail Grid -->
+    <Grid Grid.Column="0" Padding="10">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="*"/>
+      </Grid.RowDefinitions>
+      
+      <!-- Top Bar: Search, Filter, and Sort -->
+      <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" Margin="0,0,0,10">
+        <TextBox x:Name="SearchBox"
+                 PlaceholderText="Search images..."
+                 Width="260"
+                 Text="{x:Bind ViewModel.SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+        <ComboBox ItemsSource="{x:Bind ViewModel.MediaTypeOptions}"
+                  SelectedItem="{x:Bind ViewModel.SelectedMediaType, Mode=TwoWay}"
+                  Width="130"
+                  PlaceholderText="Media type"/>
+        <Button Content="{x:Bind ViewModel.SortMode, Mode=OneWay}"
+                Command="{x:Bind ViewModel.SortToggleCommand}">
+          <ToolTipService.ToolTip>
+            <ToolTip Content="Toggle sort by Date/Name"/>
+          </ToolTipService.ToolTip>
+        </Button>
+        <Button Command="{x:Bind ViewModel.RescanCommand}">
+          <ToolTipService.ToolTip>
+            <ToolTip Content="Rescan folders"/>
+          </ToolTipService.ToolTip>
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <TextBlock Text="↺" FontSize="14" VerticalAlignment="Center"/>
+            <TextBlock Text="Rescan" VerticalAlignment="Center"/>
+          </StackPanel>
+        </Button>
+        <Button x:Name="AddImagesBtn">
+          <ToolTipService.ToolTip>
+            <ToolTip Content="Pick image files to add to the library"/>
+          </ToolTipService.ToolTip>
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <TextBlock Text="+" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
+            <TextBlock Text="Add Images" VerticalAlignment="Center"/>
+          </StackPanel>
+        </Button>
+        <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
+                   Visibility="{x:Bind ViewModel.StatusMessageVisibility, Mode=OneWay}"
+                   VerticalAlignment="Center"
+                   FontSize="13"
+                   Foreground="#2E7D32"/>
+      </StackPanel>
+
+      <!-- Add Images Panel — hidden by default, shown when user clicks "Add Images" toolbar button -->
+      <Border x:Name="AddImagesPanel"
+              Grid.Row="1"
+              Visibility="Collapsed"
+              Background="{ThemeResource AppSurfaceBackground}"
+              BorderBrush="{ThemeResource AppBorderColor}"
+              BorderThickness="0,0,0,1"
+              Padding="16,12">
+          <StackPanel Spacing="12">
+              <TextBlock Text="Add Images" FontWeight="SemiBold" FontSize="14"/>
+
+              <!-- Folder selection row -->
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                  <TextBox x:Name="FolderPathBox"
+                           PlaceholderText="Select a folder..."
+                           IsReadOnly="True"
+                           MinWidth="360"
+                           HorizontalAlignment="Stretch"/>
+                  <Button x:Name="BrowseFolderBtn" Content="Browse…"/>
+              </StackPanel>
+
+              <TextBlock x:Name="FolderStatusLabel"
+                         Text="Click Browse to pick a folder."
+                         Foreground="{ThemeResource AppTextSecondary}"
+                         FontSize="12"/>
+
+              <ScrollViewer MaxHeight="240" HorizontalScrollMode="Disabled">
+                  <StackPanel x:Name="ImageChecklistPanel" Spacing="4"/>
+              </ScrollViewer>
+
+              <!-- Action buttons -->
+              <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                  <Button x:Name="CancelAddImagesBtn" Content="Cancel"/>
+                  <Button x:Name="AddSelectedBtn"
+                          Content="Add Selected"
+                          IsEnabled="False"
+                          Style="{StaticResource AccentButtonStyle}"/>
+              </StackPanel>
+          </StackPanel>
+      </Border>
+
+      <!-- Thumbnail Grid with Scroll / Empty State -->
+      <Grid Grid.Row="2">
+        <ScrollViewer x:Name="ThumbnailScroller"
+                      ViewChanged="OnScrollViewChanged">
+          <GridView x:Name="ThumbnailGrid"
+                    ItemsSource="{x:Bind ViewModel.DisplayedItems, Mode=OneWay}"
+                    SelectionMode="Single"
+                    SelectionChanged="OnThumbnailSelected"
+                    IsItemClickEnabled="True">
+            <GridView.ItemTemplate>
+              <DataTemplate x:DataType="vm:MediaItemViewModel">
+                <Grid Width="160" Height="160" Background="{ThemeResource AppCardBackground}">
+                  <Image Source="{x:Bind ImageSource}" Stretch="UniformToFill"
+                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                  <Border VerticalAlignment="Bottom" Background="#AA000000" Padding="4,2">
+                    <TextBlock Text="{x:Bind FileName}"
+                               Foreground="White" FontSize="11"
+                               TextTrimming="CharacterEllipsis" MaxLines="1"/>
+                  </Border>
+                </Grid>
+              </DataTemplate>
+            </GridView.ItemTemplate>
+          </GridView>
+        </ScrollViewer>
+
+        <!-- Empty State -->
+        <StackPanel Visibility="{x:Bind ViewModel.EmptyStateVisibility, Mode=OneWay}"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="12">
+          <TextBlock Text="🔍"
+                     FontSize="48"
+                     HorizontalAlignment="Center"/>
+          <TextBlock Text="No images match your search."
+                     FontSize="16"
+                     Foreground="{ThemeResource AppTextSecondary}"
+                     HorizontalAlignment="Center"/>
+          <TextBlock Text="Try adjusting your search terms or filters."
+                     FontSize="13"
+                     Foreground="{ThemeResource AppTextTertiary}"
+                     HorizontalAlignment="Center"/>
+        </StackPanel>
+      </Grid>
+    </Grid>
+    
+    <!-- Right Panel: Preview and Metadata -->
+    <Grid Grid.Column="1" 
+          Background="{ThemeResource AppSurfaceBackground}" 
+          Padding="15"
+          BorderBrush="{ThemeResource AppBorderColor}"
+          BorderThickness="1,0,0,0">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="*"/>
+        <RowDefinition Height="Auto"/>
+      </Grid.RowDefinitions>
+      
+      <!-- Preview Title -->
+      <TextBlock Grid.Row="0" 
+                 Text="Preview" 
+                 FontSize="18" 
+                 FontWeight="Bold"
+                 Margin="0,0,0,10"/>
+      
+      <!-- Full-size Preview Area -->
+      <Border Grid.Row="1" 
+              Background="{ThemeResource AppPreviewBackground}"
+              BorderBrush="{ThemeResource AppBorderStrong}"
+              BorderThickness="1"
+              Margin="0,0,0,15">
+        <Grid>
+          <!-- Placeholder for full preview -->
+          <TextBlock Text="{x:Bind ViewModel.SelectedItem.FileName, Mode=OneWay, FallbackValue='No image selected'}"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center"
+                     FontSize="14"
+                     Foreground="{ThemeResource AppTextSecondary}"
+                     TextWrapping="Wrap"
+                     TextAlignment="Center"
+                     Margin="10"/>
+        </Grid>
+      </Border>
+      
+      <!-- Metadata Panel -->
+      <StackPanel Grid.Row="2" Spacing="10">
+        <!-- Analyze button — disabled until an image is selected -->
+        <Button x:Name="AnalyzeBtn"
+                IsEnabled="False"
+                HorizontalAlignment="Stretch">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <TextBlock Text="🔍" FontSize="14" VerticalAlignment="Center"/>
+            <TextBlock Text="Analyze" VerticalAlignment="Center"/>
+          </StackPanel>
+        </Button>
+
+        <TextBlock Text="Metadata" 
+                   FontSize="14" 
+                   FontWeight="SemiBold"
+                   Margin="0,0,0,5"/>
+        
+        <StackPanel Spacing="5">
+          <TextBlock Text="Description:" 
+                     FontSize="12" 
+                     FontWeight="SemiBold"/>
+          <TextBlock Text="{x:Bind ViewModel.SelectedItem.Description, Mode=OneWay, FallbackValue='—'}"
+                     FontSize="11"
+                     TextWrapping="Wrap"
+                     Foreground="{ThemeResource AppTextPrimary}"/>
+        </StackPanel>
+        
+        <StackPanel Spacing="5">
+          <TextBlock Text="Tags:" 
+                     FontSize="12" 
+                     FontWeight="SemiBold"/>
+          <TextBlock Text="{x:Bind ViewModel.SelectedItem.Tags, Mode=OneWay, FallbackValue='—'}"
+                     FontSize="11"
+                     TextWrapping="Wrap"
+                     Foreground="{ThemeResource AppTextPrimary}"/>
+        </StackPanel>
+        
+        <StackPanel Spacing="5">
+          <TextBlock Text="Media Type:" 
+                     FontSize="12" 
+                     FontWeight="SemiBold"/>
+          <TextBlock Text="{x:Bind ViewModel.SelectedItem.MediaType, Mode=OneWay, FallbackValue='—'}"
+                     FontSize="11"
+                     Foreground="{ThemeResource AppTextPrimary}"/>
+        </StackPanel>
+        
+        <StackPanel Spacing="5">
+          <TextBlock Text="Created:" 
+                     FontSize="12" 
+                     FontWeight="SemiBold"/>
+          <TextBlock Text="{x:Bind ViewModel.SelectedItem.FormattedDate, Mode=OneWay, FallbackValue='—'}"
+                     FontSize="11"
+                     Foreground="{ThemeResource AppTextPrimary}"/>
+        </StackPanel>
+      </StackPanel>
+    </Grid>
   </Grid>
 </Page>

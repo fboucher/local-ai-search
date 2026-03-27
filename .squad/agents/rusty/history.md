@@ -190,3 +190,166 @@ new GtkHost(() => new App()).Run();
 **Key learnings:**
 - Final TFM decision: `net10.0` only (single TFM for all platforms via Skia/GTK)
 - Uno 5.6.99 does not support net10.0-windows WinUI; Skia/GTK works on Windows via net10.0
+
+### 2026-03-26 — Slice #2: Database Foundation
+
+**Branch:** `squad/3-database-foundation`
+**PR:** https://github.com/fboucher/local-ai-search/pull/12
+**Status:** ✅ Completed (Ready for review)
+
+**What I built:**
+- `MediaItem.cs` model in `src/LocalAiSearch/Models/`:
+  - All properties: Id, FilePath, FileHash, Description, Tags, MediaType, FileSizeBytes, CreatedAt, UpdatedAt, IsTagged
+  - Tags stored as comma-separated string (no JSON complexity)
+- `DatabaseService.cs` in `src/LocalAiSearch/Services/`:
+  - Constructor accepts dbPath (default: `./local.db`)
+  - Internal constructor accepts SqliteConnection for test isolation
+  - `InitializeAsync()` creates `media_items` table with indexes on file_hash and tags
+  - Full CRUD: `GetAllAsync()`, `GetByIdAsync()`, `GetByHashAsync()`, `InsertAsync()`, `UpdateAsync()`, `SearchAsync()`
+  - LIKE search on description and tags fields
+- `LocalAiSearch.Tests` project in `src/LocalAiSearch.Tests/`:
+  - xUnit test project targeting `net10.0` only
+  - `DatabaseServiceTests.cs` with 9 passing tests
+  - In-memory SQLite for test isolation (each test gets its own connection)
+  - Tests cover: init, insert, getById, getByHash, update, search by description, search by tags, getAll
+
+**Technology choices:**
+- **Microsoft.Data.Sqlite** (not Turso/libsql) — local-only SQLite, no cloud needed
+- **Plain ADO.NET** (no ORM) — keeps it simple for this app size
+- **Tags as comma-separated string** — simpler than JSON, works fine with LIKE search
+- **Internal constructor** for test isolation — allows passing in-memory connection while keeping public API clean
+
+**Key learnings:**
+- SQLite in-memory databases (`:memory:`) require the connection to stay open for the entire test lifecycle — otherwise the db disappears
+- Used `InternalsVisibleTo` in csproj to expose internal constructor to test project
+- `RETURNING id` clause in INSERT works on SQLite 3.35+, which is what .NET 10 ships with
+- DateTime stored as ISO 8601 strings (`ToString("O")`) for simplicity
+
+**File paths:**
+- `src/LocalAiSearch/Models/MediaItem.cs`
+- `src/LocalAiSearch/Services/DatabaseService.cs`
+- `src/LocalAiSearch.Tests/DatabaseServiceTests.cs`
+- `src/LocalAiSearch/LocalAiSearch.csproj` (added Microsoft.Data.Sqlite + InternalsVisibleTo)
+- `src/LocalAiSearch.Tests/LocalAiSearch.Tests.csproj` (xUnit test project)
+
+**Next steps:**
+- Slice #4: Image Viewer (Livingston's domain)
+- Slice #5: Folder Scanner (uses DatabaseService to check for duplicates via GetByHashAsync)
+- Slice #6: AI Tagging (updates MediaItem.Description and Tags via UpdateAsync)
+
+### 2026-03-27 — Slices #7/#8 — Rescan & Progress Service (Round 2)
+
+**Branch:** `squad/8-rescan-progress`  
+**PR:** #16 (targeting dev)  
+**Status:** ✅ Completed, ready for merge  
+
+**What I built:**
+
+1. **ScanProgressService.cs** — Manages folder scan with progress reporting and cancellation
+   - `IProgress<ScanProgress>` pattern (thread-safe, standard .NET)
+   - `RunAsync(string folderPath, IProgress<ScanProgress> progress, CancellationToken cancellation)` orchestrates the scan
+   - Per-item tagging loop: calls `AiTaggingService.TagImageAsync()` per item vs. batch `TagAllUnprocessedAsync()`
+   - Folder resolution: `SCAN_FOLDER` env var with fallback to `Environment.SpecialFolder.MyPictures`
+   - Progress reporting: "Processing image X of Y" granular messages
+   - Handles cancellation gracefully (CancellationToken propagated throughout)
+
+2. **MainViewModel.cs enhancements**
+   - Secondary constructor: `MainViewModel(DatabaseService, ScanProgressService)` for DI/testing
+   - Existing parameterless constructor still works (creates services internally, no breaking changes)
+   - `RescanCommand` — triggers folder scan with progress UI updates
+   - `CancelScanCommand` — cancels in-progress scan
+   - `IsScanning` property (bool) — tracks whether scan is active
+   - Progress properties for UI binding (scanned count, total, current file, etc.)
+
+**Architecture decisions:**
+
+1. **IProgress<ScanProgress> pattern** — Standard .NET, auto-marshals to UI thread, testable with mock
+2. **Per-item tagging** — Enables granular progress vs. batch operation
+3. **Env var folder path** — Developer-friendly, no native folder picker dialog yet
+4. **Dual constructors** — Supports both production and test scenarios without breaking changes
+
+**Testing:**
+- Linus added 6 comprehensive tests to this branch (all passing)
+- Covers progress reporting, cancellation, folder resolution, per-item loop
+
+**Next steps:**
+- Merge PR #16 to dev
+- Livingston's Slice #9 (Theming) ready for merge in parallel
+
+
+### 2026-03-27 — Slice #6: AI Tagging Service (Stub + Real HTTP)
+
+**Branch:** `squad/6-ai-tagging-service`  
+**PR:** #14 (targeting dev)  
+**Status:** ✅ Complete (Ready for review)  
+
+**What I built:**
+- `AiTaggingService.cs` in `src/LocalAiSearch/Services/`:
+  - Constructor accepts optional `endpointUrl` parameter + DatabaseService
+  - Auto-detects stub mode: if `AI_ENDPOINT` env var unset → stub; any value → real HTTP
+  - Stub response: hardcoded description/tags/mediatype for testing
+  - Real HTTP path (fully written, not yet activated):
+    - POST to `{endpoint}/v1/chat/completions`
+    - Vision-style message with Base64 data URL image
+    - Prompt structure: "Provide DESCRIPTION: / TAGS: / TYPE:" format
+    - Response parsing with fallback for varied formats (case-insensitive)
+  - `TagMediaItemAsync()` method: loads image, calls API, parses response, updates database
+
+**HTTP Design:**
+- Model: `"local-model"` (constant, easily changed for different endpoints)
+- Content types: `image/base64` vision block + `text` prompt
+- Response parsing: extracts DESCRIPTION, TAGS, TYPE with fallback handling
+
+**Configuration for real AI (zero code changes):**
+```bash
+export AI_ENDPOINT="http://192.168.1.50:1234"
+dotnet run
+```
+
+**Tests (9 written):**
+- Basic stub response
+- Real HTTP POST structure (via mock handler)
+- Response parsing with various formats
+- Error handling and fallbacks
+- Batch processing (added by Linus)
+
+**Key learnings:**
+- OpenAI-compatible format is standard for local LLM endpoints
+- Base64 data URLs work well for vision-style messages
+- Fallback parsing essential for robust response handling
+- Stub mode pattern: check for config → auto-switch to real mode
+
+**Next steps:**
+- Linus adds additional tests (batch, Base64, case-insensitive)
+- PR #14 review and merge to dev
+- Live endpoint integration when AI service becomes available
+
+
+### 2026-06-10 — Bug Fix: `no such table: media_items`
+
+**Branch:** `dev`
+**Commit:** `23f71c6`
+**Status:** ✅ Completed
+
+**Bug:** `SQLite Error 1: 'no such table: media_items'` when user clicks "Add Images" without first running Rescan.
+
+**Root cause:** `DatabaseService.InitializeAsync()` was only called via the Rescan flow (`ScanProgressService.RunAsync()`). If the user added images before ever running a Rescan, the `media_items` table didn't exist yet.
+
+**Fix:**
+- Added `await _db.InitializeAsync()` as the first line of `ImageImportService.ImportAsync()` — guarantees schema exists before any import DB operations.
+- Added `await _db.InitializeAsync()` inside `MainViewModel.LoadImagesAsync()` before any query — guarantees schema exists on first grid load.
+- `InitializeAsync` uses `CREATE TABLE IF NOT EXISTS`, so calling it multiple times is safe (idempotent).
+
+**Files changed:**
+- `src/LocalAiSearch/Services/ImageImportService.cs`
+- `src/LocalAiSearch/ViewModels/MainViewModel.cs`
+
+**Tests:** 46/46 passed. Zero build warnings/errors.
+
+### 2026-03-27 — Cross-Agent Brief: Image Analysis Backend & DB Schema
+
+**Finding (Bertha design work):** DB already has `description`, `tags`, `is_tagged` columns + AiTaggingService exists with `ParseAiResponse()` method.
+
+**User directive (Frank):** AI backend is **local OpenAI-compatible endpoint at 192.168.2.11:8000/v1** (not Ollama, not cloud). Use OpenAI .NET SDK with custom BaseUrl.
+
+**Implication for Rusty:** Future image analysis feature will use `IImageAnalysisService` interface with backend-specific implementations. Can reuse existing `ParseAiResponse()` parsing logic. Images stored on disk only; DB stores file path.

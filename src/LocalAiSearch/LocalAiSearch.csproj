@@ -5,15 +5,21 @@
     <RootNamespace>LocalAiSearch</RootNamespace>
     <AssemblyName>LocalAiSearch</AssemblyName>
     <Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn);MSB3246</NoWarn>
     <ImplicitUsings>enable</ImplicitUsings>
     <IsUnoHead>true</IsUnoHead>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="OpenAI" Version="2.9.1" />
     <PackageReference Include="Uno.WinUI" Version="5.*" />
     <PackageReference Include="Uno.Extensions.Hosting" Version="*" />
     <PackageReference Include="Uno.WinUI.Skia.Gtk" Version="5.*" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="*" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="**/*.xaml" Exclude="obj/**/*.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="LocalAiSearch.Tests" />
   </ItemGroup>
 </Project>

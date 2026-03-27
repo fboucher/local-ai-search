@@ -8,7 +8,7 @@ namespace LocalAiSearch;
 /// </summary>
 public partial class App : Application
 {
-    protected Window? MainWindow { get; private set; }
+    public Window? MainWindow { get; private set; }
 
     public App()
     {

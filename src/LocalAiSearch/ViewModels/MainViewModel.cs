@@ -303,7 +303,13 @@ public class MainViewModel : INotifyPropertyChanged
 
         IReadOnlyList<string> paths;
         try { paths = await _filePicker.PickImagesAsync(); }
-        catch { return; }
+        catch (Exception ex)
+        {
+            await Console.Error.WriteLineAsync($"[AddImagesAsync] File picker failed: {ex}");
+            StatusMessage = "Error opening file picker";
+            _ = ClearStatusAfterDelayAsync();
+            return;
+        }
 
         if (paths.Count == 0) return;
 

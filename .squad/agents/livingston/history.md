@@ -304,3 +304,8 @@ var files = await picker.PickMultipleFilesAsync();
 - `NativeFileDialogExtendedSharp` NuGet package calls NSOpenPanel on macOS directly — bypasses GTK file chooser and GSettings requirement entirely. Use for any native folder/file picking in Uno GTK apps.
 - The GTK file chooser (and FileOpenPicker via InitializeWithWindow) both fail on macOS due to GSettings. NativeFileDialogExtendedSharp is the correct cross-platform solution.
 - **API details (verified from assembly metadata):** namespace is `NativeFileDialogExtendedSharp`, static class is `Nfd` (not `NFD`, not `Dialog`). Method: `Nfd.PickFolder()` returns `NfdDialogResult` with `.Status` (NfdStatus.Ok/Cancel/Error) and `.Path`.
+
+### osascript Folder Picker Replaces NativeFileDialogExtendedSharp — 2026-06-XX
+
+- `NativeFileDialogExtendedSharp` (NSOpenPanel) requires `NSApplication` to be initialized — does NOT work in Uno GTK apps on macOS. `Nfd.PickFolder()` returns error/cancel silently with no UI shown.
+- `osascript -e "POSIX path of (choose folder)"` is the correct cross-process macOS folder picker. Works from GTK, terminal, any process — no NSApplication, no GSettings, no dependencies. Returns a POSIX path with trailing slash (e.g. `/Users/frank/Pictures/`). Use `output.Trim().TrimEnd('/')` for a clean path. If user cancels, osascript exits with code 1 and empty output — `string.IsNullOrEmpty(path)` handles gracefully.

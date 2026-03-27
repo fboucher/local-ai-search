@@ -31,6 +31,29 @@
             <ToolTip Content="Toggle sort by Date/Name"/>
           </ToolTipService.ToolTip>
         </Button>
+        <Button Command="{x:Bind ViewModel.RescanCommand}">
+          <ToolTipService.ToolTip>
+            <ToolTip Content="Rescan folders"/>
+          </ToolTipService.ToolTip>
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <TextBlock Text="↺" FontSize="14" VerticalAlignment="Center"/>
+            <TextBlock Text="Rescan" VerticalAlignment="Center"/>
+          </StackPanel>
+        </Button>
+        <Button Command="{x:Bind ViewModel.AddImagesCommand}">
+          <ToolTipService.ToolTip>
+            <ToolTip Content="Pick image files to add to the library"/>
+          </ToolTipService.ToolTip>
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <TextBlock Text="+" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
+            <TextBlock Text="Add Images" VerticalAlignment="Center"/>
+          </StackPanel>
+        </Button>
+        <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
+                   Visibility="{x:Bind ViewModel.StatusMessageVisibility, Mode=OneWay}"
+                   VerticalAlignment="Center"
+                   FontSize="13"
+                   Foreground="#2E7D32"/>
       </StackPanel>
 
       <!-- Thumbnail Grid with Scroll / Empty State -->

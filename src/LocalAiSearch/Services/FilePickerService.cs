@@ -111,6 +111,15 @@ public class FilePickerService : IFilePickerService
         }
 
         browseBtn.Click += (_, _) => RefreshList(folderBox.Text?.Trim() ?? string.Empty);
+        browseBtn.Tapped += (_, _) => RefreshList(folderBox.Text?.Trim() ?? string.Empty);
+
+        // Auto-refresh as user types a path (length > 3 to avoid rapid fs hits on partial paths)
+        folderBox.TextChanged += (_, _) =>
+        {
+            var text = folderBox.Text?.Trim() ?? string.Empty;
+            if (text.Length > 3)
+                RefreshList(text);
+        };
 
         // Auto-browse the pre-filled Pictures folder on open
         RefreshList(folderBox.Text?.Trim() ?? string.Empty);

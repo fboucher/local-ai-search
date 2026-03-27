@@ -1,5 +1,7 @@
 using System;
+using System.IO;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace LocalAiSearch.ViewModels;
 
@@ -15,15 +17,30 @@ public class MediaItemViewModel
     public string MediaType { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
     
+    private ImageSource? _imageSource;
+
     /// <summary>
-    /// Thumbnail image source. Null for now (placeholder mode).
+    /// Lazy-loaded thumbnail. Decoded at 160px width to reduce memory footprint.
     /// </summary>
-    public ImageSource? Thumbnail { get; set; }
+    public ImageSource? ImageSource
+    {
+        get
+        {
+            if (_imageSource == null && !string.IsNullOrEmpty(FilePath) && File.Exists(FilePath))
+            {
+                var bitmap = new BitmapImage();
+                bitmap.DecodePixelWidth = 160;
+                bitmap.UriSource = new Uri(FilePath);
+                _imageSource = bitmap;
+            }
+            return _imageSource;
+        }
+    }
     
     /// <summary>
     /// Display filename for UI.
     /// </summary>
-    public string FileName => System.IO.Path.GetFileName(FilePath);
+    public string FileName => Path.GetFileName(FilePath ?? string.Empty);
     
     /// <summary>
     /// Formatted date for display.

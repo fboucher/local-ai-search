@@ -1746,7 +1746,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v10.0",
         "dependencies": {
-          "Microsoft.Data.Sqlite": "10.0.5",
+          "Microsoft.Data.Sqlite": "0.0.0",
           "Uno.Extensions.Hosting": "0.0.0",
           "Uno.WinUI": "5.0.0",
           "Uno.WinUI.Skia.Gtk": "5.0.0"

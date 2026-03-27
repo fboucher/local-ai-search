@@ -311,7 +311,12 @@ public class MainViewModel : INotifyPropertyChanged
             return;
         }
 
-        if (paths.Count == 0) return;
+        if (paths.Count == 0)
+        {
+            StatusMessage = "No valid paths entered";
+            _ = ClearStatusAfterDelayAsync();
+            return;
+        }
 
         var result = await _imageImport.ImportAsync(paths);
         await LoadImagesAsync();

@@ -14,6 +14,15 @@
 
 ## Learnings
 
+### 2026-06-13: Slice #8 — ScanProgressService Tests Written
+- ✅ **Branch:** `squad/8-rescan-progress` (committed as 9726c3d)
+- **Pattern:** Same in-memory SQLite + stub AiTaggingService (no endpoint) pattern as prior slices
+- **Progress capture:** `new Progress<ScanProgress>(p => list.Add(p))` — requires `await Task.Delay(50)` after `RunAsync` to let synchronous Progress<T> callbacks fire on the thread pool
+- **Cancellation test:** Cancel `CancellationTokenSource` inside the progress callback after first Tagging event; assert `ThrowsAnyAsync<OperationCanceledException>` on RunAsync
+- **Already-processed test:** Run scan once → mark item `IsTagged=true` via DB → second run has no `ScanPhase.Tagging` events
+- **Temp dir teardown:** Create temp dir in constructor, delete in `Dispose(recursive: true)` — write MinimalPng bytes directly into temp dir so scanner finds real files
+- **Total test suite after:** 39 passing (33 prior + 6 new)
+
 ### 2026-06-12: Slice #6 — AiTaggingService Tests Written
 - ✅ **Branch:** `squad/6-ai-tagging-service` (committed alongside Rusty's implementation)
 - **Pattern:** In-memory SQLite via `DatabaseService(SqliteConnection)` constructor — same as DatabaseServiceTests

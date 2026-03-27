@@ -119,7 +119,31 @@
 
 
 
-### Dark/Light Theming (Slice #9) — 2026-03-27
+### GTK File Picker Wiring — 2026-03-27
+
+**Bug fixed:** "Add Images" button did nothing on macOS GTK Skia.
+
+**Root cause:** `FileOpenPicker` on Uno Skia/GTK silently fails unless initialized with the native window handle via `WinRT.Interop` before calling `PickMultipleFilesAsync`.
+
+**Canonical GTK file picker pattern:**
+```csharp
+var window = (Application.Current as App)?.MainWindow
+    ?? throw new InvalidOperationException("MainWindow not available");
+
+var picker = new FileOpenPicker { ... };
+var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
+WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);  // <-- REQUIRED on GTK
+var files = await picker.PickMultipleFilesAsync();
+```
+
+**Other changes:**
+- `App.MainWindow` changed from `protected` to `public` so services can access it.
+- Silent `catch { return; }` in `AddImagesAsync` replaced with `Console.Error` log + `StatusMessage = "Error opening file picker"` so failures surface in UI.
+
+**Build:** ✅ 0 errors, 0 warnings  
+**Commit:** b919c8e on dev
+
+
 
 **Built:** System-aware dark/light theming using ResourceDictionary.ThemeDictionaries.
 

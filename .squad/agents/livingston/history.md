@@ -117,3 +117,24 @@
 - Slice #8 (Rescan & Progress) uses this search infrastructure
 - AI Tagging service (Slice #6) integrates with search filters
 
+
+
+### Dark/Light Theming (Slice #8) — 2026-03-27
+
+**Built:** System-aware dark/light theming using ResourceDictionary.ThemeDictionaries.
+
+**Changes Made:**
+1. **App.xaml**: Replaced empty MergedDictionaries TODO with inline `ResourceDictionary.ThemeDictionaries` with `Light` and `Dark` keys. 10 named brushes per theme.
+2. **App.xaml.cs**: On `OnLaunched`, read `Application.RequestedTheme` and set `rootFrame.RequestedTheme = ElementTheme.Dark/Light` explicitly — required for GTK Skia to resolve ThemeDictionary resources.
+3. **MainPage.xaml**: Replaced all 15 hardcoded hex colors with `{ThemeResource ...}` references. Layout unchanged.
+
+**GTK Theming Lessons:**
+- `{ThemeResource ApplicationPageBackgroundThemeBrush}` fails silently on GTK Skia — never use WinUI built-in ThemeResources without Uno GTK verification.
+- Safe pattern: define ALL resources explicitly inline in App.xaml ThemeDictionaries with custom key names (e.g., AppBackground not ApplicationPageBackgroundThemeBrush).
+- `Application.RequestedTheme` reads system preference correctly.
+- `RequestedThemeChanged` event does NOT compile (CS0246: RequestedThemeChangedEventArgs not found). Use startup-only detection for now.
+- Setting `Frame.RequestedTheme` explicitly is required — just defining ThemeDictionaries is not sufficient on GTK Skia.
+
+**Build Result:** ✅ 0 errors, 0 warnings
+
+**PR:** #17 targeting dev

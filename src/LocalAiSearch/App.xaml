@@ -3,9 +3,32 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Application.Resources>
     <ResourceDictionary>
-      <ResourceDictionary.MergedDictionaries>
-        <!-- TODO: Add theme resources -->
-      </ResourceDictionary.MergedDictionaries>
+      <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+          <SolidColorBrush x:Key="AppBackground"         Color="White"/>
+          <SolidColorBrush x:Key="AppSurfaceBackground"  Color="#FFF5F5F5"/>
+          <SolidColorBrush x:Key="AppCardBackground"     Color="#FFE0E0E0"/>
+          <SolidColorBrush x:Key="AppPreviewBackground"  Color="White"/>
+          <SolidColorBrush x:Key="AppTextPrimary"        Color="#FF1E1E1E"/>
+          <SolidColorBrush x:Key="AppTextSecondary"      Color="#FF666666"/>
+          <SolidColorBrush x:Key="AppTextTertiary"       Color="#FF999999"/>
+          <SolidColorBrush x:Key="AppBorderColor"        Color="#FFCCCCCC"/>
+          <SolidColorBrush x:Key="AppBorderStrong"       Color="#FF888888"/>
+          <SolidColorBrush x:Key="AppAccentColor"        Color="#FF0078D4"/>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="AppBackground"         Color="#FF1E1E1E"/>
+          <SolidColorBrush x:Key="AppSurfaceBackground"  Color="#FF2D2D2D"/>
+          <SolidColorBrush x:Key="AppCardBackground"     Color="#FF3E3E3E"/>
+          <SolidColorBrush x:Key="AppPreviewBackground"  Color="#FF252525"/>
+          <SolidColorBrush x:Key="AppTextPrimary"        Color="#FFEFEFEF"/>
+          <SolidColorBrush x:Key="AppTextSecondary"      Color="#FFAAAAAA"/>
+          <SolidColorBrush x:Key="AppTextTertiary"       Color="#FF777777"/>
+          <SolidColorBrush x:Key="AppBorderColor"        Color="#FF555555"/>
+          <SolidColorBrush x:Key="AppBorderStrong"       Color="#FF888888"/>
+          <SolidColorBrush x:Key="AppAccentColor"        Color="#FF60CDFF"/>
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
     </ResourceDictionary>
   </Application.Resources>
 </Application>

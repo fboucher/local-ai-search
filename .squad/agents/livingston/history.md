@@ -71,3 +71,70 @@
 
 **PR:** #11 opened against squad/2-project-bootstrap branch
 
+### 2026-03-27 — Slice #7: Search & Filter Integration
+
+**Branch:** `squad/7-search-filter`  
+**PR:** #15 (targeting dev)  
+**Status:** ✅ Complete (Ready for review)  
+
+**What I updated:**
+- **MainViewModel.cs** — Wired to real DatabaseService:
+  - SearchQuery property (string) binding from TextBox
+  - SelectedMediaType property (string) binding from ComboBox
+  - EmptyStateVisibility computed property for no-results display
+  - Debounced search using `CancellationTokenSource` + `Task.Delay(300ms)`
+  - Filter integration: combines search text + media type in database query
+  - LoadMoreCommand preserved for infinite scroll
+
+- **Debounce pattern:**
+  - On each SearchQuery/SelectedMediaType change: cancel previous CTS
+  - Delay 300ms, then call `LoadItemsAsync()` with combined filters
+  - Prevents excessive database queries during rapid typing
+
+- **UI Patterns:**
+  - `EmptyStateVisibility` exposed from ViewModel instead of XAML converter
+  - MediaTypeOptions as instance property (required for `x:Bind` code generation)
+  - No custom BoolToVisibilityConverter (avoids XAML boilerplate)
+
+- **Bug Fix:**
+  - Added missing `<PackageReference Include="Microsoft.Data.Sqlite" Version="*" />` to csproj
+  - DatabaseService was failing to build without this package
+
+**Integration Points:**
+- Reads from DatabaseService.SearchAsync() with description + tags LIKE search
+- MediaTypeOptions seeded from database (or hardcoded default: Photo/Video/Document)
+- Empty state shows when items.Count == 0 after filter applied
+- Debounce prevents UI lag during search interactions
+
+**Key learnings:**
+- `x:Bind` code generation requires instance properties, not static fields
+- Uno Platform needs explicit Visibility property from ViewModel (no built-in BoolToVisibilityConverter)
+- Debounce via CTS + Task.Delay is cleaner than timer components
+- Ensure all NuGet dependencies explicitly listed in csproj (Microsoft.Data.Sqlite hidden dependency bug)
+
+**Next steps:**
+- PR #15 review and merge to dev
+- Slice #8 (Rescan & Progress) uses this search infrastructure
+- AI Tagging service (Slice #6) integrates with search filters
+
+
+
+### Dark/Light Theming (Slice #8) — 2026-03-27
+
+**Built:** System-aware dark/light theming using ResourceDictionary.ThemeDictionaries.
+
+**Changes Made:**
+1. **App.xaml**: Replaced empty MergedDictionaries TODO with inline `ResourceDictionary.ThemeDictionaries` with `Light` and `Dark` keys. 10 named brushes per theme.
+2. **App.xaml.cs**: On `OnLaunched`, read `Application.RequestedTheme` and set `rootFrame.RequestedTheme = ElementTheme.Dark/Light` explicitly — required for GTK Skia to resolve ThemeDictionary resources.
+3. **MainPage.xaml**: Replaced all 15 hardcoded hex colors with `{ThemeResource ...}` references. Layout unchanged.
+
+**GTK Theming Lessons:**
+- `{ThemeResource ApplicationPageBackgroundThemeBrush}` fails silently on GTK Skia — never use WinUI built-in ThemeResources without Uno GTK verification.
+- Safe pattern: define ALL resources explicitly inline in App.xaml ThemeDictionaries with custom key names (e.g., AppBackground not ApplicationPageBackgroundThemeBrush).
+- `Application.RequestedTheme` reads system preference correctly.
+- `RequestedThemeChanged` event does NOT compile (CS0246: RequestedThemeChangedEventArgs not found). Use startup-only detection for now.
+- Setting `Frame.RequestedTheme` explicitly is required — just defining ThemeDictionaries is not sufficient on GTK Skia.
+
+**Build Result:** ✅ 0 errors, 0 warnings
+
+**PR:** #17 targeting dev

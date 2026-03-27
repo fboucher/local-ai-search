@@ -35,3 +35,56 @@
   - `TagImageAsync_WithEndpoint_SendsBase64DataUrl` — verifies `data:...;base64,...` format in HTTP payload
   - `ParseAiResponse_IsCaseInsensitive_ForFieldLabels` — edge case: lowercase field labels still parse correctly
 - **Total test suite after:** 33 passing (0 failing, 0 skipped)
+### 2026-03-26: Slice #1 Verification Guide Created
+- ✅ **Completed:** VERIFY-SLICE-1.md in project root
+- **Purpose:** Step-by-step verification checklist for GitHub issue #2 (Project Bootstrap)
+- **Coverage:** All 5 acceptance criteria from issue #2 mapped to executable verification steps
+- **Format:** Numbered steps with exact commands, expected outputs, and pass/fail sign-off
+- **Target User:** Frank (developer-level verification, Mac platform)
+- **Next:** After Frank completes HITL verification, confirm all acceptance criteria met and mark slice complete
+
+### 2026-03-27 — Slice #6: AI Tagging Tests (Batch, Base64, Parsing)
+
+**Branch:** `squad/6-ai-tagging-service` (Rusty's branch)  
+**PR:** #14 (targeting dev, tests included)  
+**Status:** ✅ Complete (3 new tests added)  
+
+**What I tested:**
+
+1. **Batch Processing Test**
+   - Loads multiple media items sequentially
+   - Calls TagMediaItemAsync on each item
+   - Validates response parsing for all items
+   - Confirms database updates for batch workflows
+
+2. **Base64 Data URL Structure Test**
+   - Validates vision message format for image transmission
+   - Confirms `image_url` content block structure
+   - Uses `CapturingHttpHandler` to inspect actual HTTP request payload
+   - Verifies Base64 encoding is correct (no double-encoding, proper MIME type)
+
+3. **Case-Insensitive Response Parsing Test**
+   - Tests response with varied capitalization: "DESCRIPTION: / Tags: / type:"
+   - Confirms fallback parsing works for non-standard formats
+   - Validates that service handles response variations gracefully
+
+**Test Infrastructure:**
+- `CapturingHttpHandler` custom mock handler: captures request payload for inspection
+- In-memory database for test isolation
+- Stub/real mode toggle via AiTaggingService constructor
+
+**Test Coverage Summary:**
+- Rusty: 9 original tests (stub response, real HTTP structure, parsing)
+- Linus: 3 new tests (batch, Base64, case-insensitive)
+- **Total:** 33 tests passing (21 prior + 9 Rusty + 3 Linus)
+
+**Key learnings:**
+- Base64 data URLs for vision messages must include MIME type prefix: `data:image/jpeg;base64,...`
+- Case-insensitive string operations essential for robust response parsing
+- CapturingHttpHandler pattern lets tests inspect actual HTTP request payloads (not just mocking responses)
+- Batch processing validates service works with multiple database transactions in sequence
+
+**Next steps:**
+- PR #14 review and merge to dev
+- Tests ready for CI/CD validation
+- Batch and Base64 patterns validate real endpoint will work correctly

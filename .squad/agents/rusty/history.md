@@ -237,3 +237,50 @@ new GtkHost(() => new App()).Run();
 - Slice #5: Folder Scanner (uses DatabaseService to check for duplicates via GetByHashAsync)
 - Slice #6: AI Tagging (updates MediaItem.Description and Tags via UpdateAsync)
 
+### 2026-03-27 — Slice #6: AI Tagging Service (Stub + Real HTTP)
+
+**Branch:** `squad/6-ai-tagging-service`  
+**PR:** #14 (targeting dev)  
+**Status:** ✅ Complete (Ready for review)  
+
+**What I built:**
+- `AiTaggingService.cs` in `src/LocalAiSearch/Services/`:
+  - Constructor accepts optional `endpointUrl` parameter + DatabaseService
+  - Auto-detects stub mode: if `AI_ENDPOINT` env var unset → stub; any value → real HTTP
+  - Stub response: hardcoded description/tags/mediatype for testing
+  - Real HTTP path (fully written, not yet activated):
+    - POST to `{endpoint}/v1/chat/completions`
+    - Vision-style message with Base64 data URL image
+    - Prompt structure: "Provide DESCRIPTION: / TAGS: / TYPE:" format
+    - Response parsing with fallback for varied formats (case-insensitive)
+  - `TagMediaItemAsync()` method: loads image, calls API, parses response, updates database
+
+**HTTP Design:**
+- Model: `"local-model"` (constant, easily changed for different endpoints)
+- Content types: `image/base64` vision block + `text` prompt
+- Response parsing: extracts DESCRIPTION, TAGS, TYPE with fallback handling
+
+**Configuration for real AI (zero code changes):**
+```bash
+export AI_ENDPOINT="http://192.168.1.50:1234"
+dotnet run
+```
+
+**Tests (9 written):**
+- Basic stub response
+- Real HTTP POST structure (via mock handler)
+- Response parsing with various formats
+- Error handling and fallbacks
+- Batch processing (added by Linus)
+
+**Key learnings:**
+- OpenAI-compatible format is standard for local LLM endpoints
+- Base64 data URLs work well for vision-style messages
+- Fallback parsing essential for robust response handling
+- Stub mode pattern: check for config → auto-switch to real mode
+
+**Next steps:**
+- Linus adds additional tests (batch, Base64, case-insensitive)
+- PR #14 review and merge to dev
+- Live endpoint integration when AI service becomes available
+

@@ -3379,7 +3379,7 @@
   },
   "projectFileDependencyGroups": {
     "net10.0": [
-      "Microsoft.Data.Sqlite >= 10.0.5",
+      "Microsoft.Data.Sqlite >= *",
       "Uno.Extensions.Hosting >= *",
       "Uno.WinUI >= 5.*",
       "Uno.WinUI.Skia.Gtk >= 5.*"
@@ -3430,7 +3430,7 @@
         "dependencies": {
           "Microsoft.Data.Sqlite": {
             "target": "Package",
-            "version": "[10.0.5, )"
+            "version": "[*, )"
           },
           "Uno.Extensions.Hosting": {
             "target": "Package",

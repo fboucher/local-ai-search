@@ -12,6 +12,7 @@
     <PackageReference Include="Uno.WinUI" Version="5.*" />
     <PackageReference Include="Uno.Extensions.Hosting" Version="*" />
     <PackageReference Include="Uno.WinUI.Skia.Gtk" Version="5.*" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="*" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="**/*.xaml" Exclude="obj/**/*.xaml" />

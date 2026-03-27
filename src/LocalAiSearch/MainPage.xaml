@@ -15,12 +15,16 @@
         <RowDefinition Height="*"/>
       </Grid.RowDefinitions>
       
-      <!-- Top Bar: Search and Sort -->
+      <!-- Top Bar: Search, Filter, and Sort -->
       <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" Margin="0,0,0,10">
-        <TextBox x:Name="SearchBox" 
-                 PlaceholderText="Search images..." 
-                 Width="300"
-                 Text="{x:Bind ViewModel.SearchQuery, Mode=TwoWay}"/>
+        <TextBox x:Name="SearchBox"
+                 PlaceholderText="Search images..."
+                 Width="260"
+                 Text="{x:Bind ViewModel.SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+        <ComboBox ItemsSource="{x:Bind ViewModel.MediaTypeOptions}"
+                  SelectedItem="{x:Bind ViewModel.SelectedMediaType, Mode=TwoWay}"
+                  Width="130"
+                  PlaceholderText="Media type"/>
         <Button Content="{x:Bind ViewModel.SortMode, Mode=OneWay}"
                 Command="{x:Bind ViewModel.SortToggleCommand}">
           <ToolTipService.ToolTip>
@@ -28,41 +32,58 @@
           </ToolTipService.ToolTip>
         </Button>
       </StackPanel>
-      
-      <!-- Thumbnail Grid with Scroll -->
-      <ScrollViewer Grid.Row="1" 
-                    x:Name="ThumbnailScroller"
-                    ViewChanged="OnScrollViewChanged">
-        <GridView x:Name="ThumbnailGrid"
-                  ItemsSource="{x:Bind ViewModel.DisplayedItems, Mode=OneWay}"
-                  SelectionMode="Single"
-                  SelectionChanged="OnThumbnailSelected"
-                  IsItemClickEnabled="True">
-          <GridView.ItemTemplate>
-            <DataTemplate>
-              <StackPanel Width="150" Height="180">
-                <!-- Placeholder colored rectangle for thumbnail -->
-                <Border Width="150" Height="150" 
-                        Background="#FFE0E0E0"
-                        BorderBrush="#FF888888"
-                        BorderThickness="1">
-                  <TextBlock Text="📷" 
-                             FontSize="48"
-                             HorizontalAlignment="Center"
-                             VerticalAlignment="Center"
-                             Foreground="#FF666666"/>
-                </Border>
-                <!-- Filename label -->
-                <TextBlock Text="{Binding FileName}" 
-                           TextTrimming="CharacterEllipsis"
-                           FontSize="11"
-                           Margin="0,5,0,0"
-                           TextAlignment="Center"/>
-              </StackPanel>
-            </DataTemplate>
-          </GridView.ItemTemplate>
-        </GridView>
-      </ScrollViewer>
+
+      <!-- Thumbnail Grid with Scroll / Empty State -->
+      <Grid Grid.Row="1">
+        <ScrollViewer x:Name="ThumbnailScroller"
+                      ViewChanged="OnScrollViewChanged">
+          <GridView x:Name="ThumbnailGrid"
+                    ItemsSource="{x:Bind ViewModel.DisplayedItems, Mode=OneWay}"
+                    SelectionMode="Single"
+                    SelectionChanged="OnThumbnailSelected"
+                    IsItemClickEnabled="True">
+            <GridView.ItemTemplate>
+              <DataTemplate>
+                <StackPanel Width="150" Height="180">
+                  <Border Width="150" Height="150"
+                          Background="#FFE0E0E0"
+                          BorderBrush="#FF888888"
+                          BorderThickness="1">
+                    <TextBlock Text="📷"
+                               FontSize="48"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               Foreground="#FF666666"/>
+                  </Border>
+                  <TextBlock Text="{Binding FileName}"
+                             TextTrimming="CharacterEllipsis"
+                             FontSize="11"
+                             Margin="0,5,0,0"
+                             TextAlignment="Center"/>
+                </StackPanel>
+              </DataTemplate>
+            </GridView.ItemTemplate>
+          </GridView>
+        </ScrollViewer>
+
+        <!-- Empty State -->
+        <StackPanel Visibility="{x:Bind ViewModel.EmptyStateVisibility, Mode=OneWay}"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="12">
+          <TextBlock Text="🔍"
+                     FontSize="48"
+                     HorizontalAlignment="Center"/>
+          <TextBlock Text="No images match your search."
+                     FontSize="16"
+                     Foreground="#FF666666"
+                     HorizontalAlignment="Center"/>
+          <TextBlock Text="Try adjusting your search terms or filters."
+                     FontSize="13"
+                     Foreground="#FF999999"
+                     HorizontalAlignment="Center"/>
+        </StackPanel>
+      </Grid>
     </Grid>
     
     <!-- Right Panel: Preview and Metadata -->

@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using LocalAiSearch.Models;
 using LocalAiSearch.Services;
 using Microsoft.Data.Sqlite;
@@ -18,6 +19,25 @@ file sealed class FakeHttpHandler(HttpStatusCode status, string body) : HttpMess
             Content = new StringContent(body, Encoding.UTF8, "application/json")
         };
         return Task.FromResult(response);
+    }
+}
+
+/// <summary>
+/// HttpMessageHandler that captures request body for assertion in tests.
+/// </summary>
+file sealed class CapturingHttpHandler(string responseBody) : HttpMessageHandler
+{
+    public string? CapturedRequestBody { get; private set; }
+
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        if (request.Content != null)
+            CapturedRequestBody = await request.Content.ReadAsStringAsync(cancellationToken);
+
+        return new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(responseBody, Encoding.UTF8, "application/json")
+        };
     }
 }
 
@@ -193,6 +213,78 @@ public class AiTaggingServiceTests : IDisposable
         Assert.True(result.Success);
         Assert.NotNull(result.Description);
         Assert.Equal("untagged", result.Tags);
+    }
+
+    // ── Linus: additional edge-case coverage ───────────────────────────────────
+
+    [Fact]
+    public async Task TagAllUnprocessedAsync_WithMultipleItems_ProcessesAll()
+    {
+        var svc = new AiTaggingService(_db, endpointUrl: null);
+        var path1 = WriteTestImage();
+        var path2 = WriteTestImage();
+        var path3 = WriteTestImage();
+
+        await SeedItemAsync(path1);
+        await SeedItemAsync(path2);
+        await SeedItemAsync(path3);
+
+        var batch = await svc.TagAllUnprocessedAsync();
+
+        Assert.Equal(3, batch.Tagged);
+        Assert.Equal(0, batch.Skipped);
+
+        var all = await _db.GetAllAsync();
+        Assert.All(all, item => Assert.True(item.IsTagged));
+    }
+
+    [Fact]
+    public async Task TagImageAsync_WithEndpoint_SendsBase64DataUrl()
+    {
+        const string fakeResponse = @"{""choices"":[{""message"":{""content"":""DESCRIPTION: Test.\nTAGS: a,b,c,d,e\nTYPE: photo""}}]}";
+        var handler = new CapturingHttpHandler(fakeResponse);
+        var svc = new AiTaggingService(_db, endpointUrl: "http://fake-ai-host", httpClient: new HttpClient(handler));
+
+        var path = WriteTestImage();
+        var item = await SeedItemAsync(path);
+
+        await svc.TagImageAsync(item);
+
+        Assert.NotNull(handler.CapturedRequestBody);
+        using var doc = JsonDocument.Parse(handler.CapturedRequestBody!);
+        var imageUrl = doc.RootElement
+            .GetProperty("messages")[0]
+            .GetProperty("content")[0]
+            .GetProperty("image_url")
+            .GetProperty("url")
+            .GetString();
+
+        Assert.NotNull(imageUrl);
+        Assert.StartsWith("data:", imageUrl);
+        Assert.Contains(";base64,", imageUrl);
+        // The body after the comma must be valid Base64
+        var base64Part = imageUrl!.Split(",", 2)[1];
+        Assert.True(IsValidBase64(base64Part), "Data URL payload is not valid Base64");
+    }
+
+    [Fact]
+    public void ParseAiResponse_IsCaseInsensitive_ForFieldLabels()
+    {
+        var content = "description: A sunny day.\ntags: sun,sky,warm,light,day\ntype: photo";
+
+        var result = AiTaggingService.ParseAiResponse(content);
+
+        Assert.True(result.Success);
+        Assert.Equal("A sunny day.", result.Description);
+        Assert.Equal("sun,sky,warm,light,day", result.Tags);
+        Assert.Equal("photo", result.MediaType);
+    }
+
+    private static bool IsValidBase64(string s)
+    {
+        if (string.IsNullOrEmpty(s) || s.Length % 4 != 0) return false;
+        try { Convert.FromBase64String(s); return true; }
+        catch { return false; }
     }
 
     // ── Helpers ────────────────────────────────────────────────────────────────

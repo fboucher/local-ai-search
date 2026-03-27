@@ -17,4 +17,7 @@
   <ItemGroup>
     <Page Include="**/*.xaml" Exclude="obj/**/*.xaml" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="LocalAiSearch.Tests" />
+  </ItemGroup>
 </Project>

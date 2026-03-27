@@ -13,6 +13,7 @@
     <Grid Grid.Column="0" Padding="10">
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto"/>
+        <RowDefinition Height="Auto"/>
         <RowDefinition Height="*"/>
       </Grid.RowDefinitions>
       

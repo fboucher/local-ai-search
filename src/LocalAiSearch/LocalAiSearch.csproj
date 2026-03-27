@@ -5,6 +5,7 @@
     <RootNamespace>LocalAiSearch</RootNamespace>
     <AssemblyName>LocalAiSearch</AssemblyName>
     <Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn);MSB3246</NoWarn>
     <ImplicitUsings>enable</ImplicitUsings>
     <IsUnoHead>true</IsUnoHead>
   </PropertyGroup>

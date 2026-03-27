@@ -349,6 +349,8 @@ public class MainViewModel : INotifyPropertyChanged
 
             if (token.IsCancellationRequested) return;
 
+            await _db.InitializeAsync();
+
             List<LocalAiSearch.Models.MediaItem> results;
 
             if (string.IsNullOrWhiteSpace(_searchQuery))

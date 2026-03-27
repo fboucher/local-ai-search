@@ -23,6 +23,8 @@ public class ImageImportService
     /// </summary>
     public async Task<ImportResult> ImportAsync(IReadOnlyList<string> filePaths, CancellationToken ct = default)
     {
+        await _db.InitializeAsync();
+
         int added = 0;
         int skipped = 0;
         int unsupported = 0;

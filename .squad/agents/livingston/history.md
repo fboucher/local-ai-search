@@ -256,3 +256,19 @@ var files = await picker.PickMultipleFilesAsync();
 
 **Build Result:** ✅ 0 errors, 0 warnings  
 **Commit:** f2ba0ae on dev
+
+### XamlRoot Null Fix — ContentDialog never opened on GTK — 2026-06-XX
+
+**Bug fixed:** `ShowAsync()` throwing `InvalidOperationException` silently — "Add Images" appeared to do nothing.
+
+**Root cause:** `(Application.Current as App)?.MainWindow?.Content?.XamlRoot` returns `null` on Uno GTK at the time `FilePickerService.PickImagesAsync()` is called. The exception was swallowed by the `try/catch` in `MainViewModel.AddImagesAsync()`.
+
+**Fix:**
+- Added `public XamlRoot? XamlRoot { get; set; }` property to `FilePickerService`.
+- Replaced the App-singleton XamlRoot lookup with `dialog.XamlRoot = XamlRoot;` + null guard (logs to stderr and returns empty).
+- In `MainPage.xaml.cs`, wired `Loaded += (_, _) => filePicker.XamlRoot = this.XamlRoot;` — `this.XamlRoot` is guaranteed non-null after `Loaded` fires.
+
+**GTK Rule:** Never obtain `XamlRoot` from `App.MainWindow.Content` in a service — it is null on Uno GTK. Always pass it from a `Page.Loaded` handler where `this.XamlRoot` is valid.
+
+**Build Result:** ✅ 0 errors, 0 warnings  
+**Commit:** 87bf461 on dev

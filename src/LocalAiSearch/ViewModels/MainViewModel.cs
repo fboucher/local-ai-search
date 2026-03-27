@@ -20,7 +20,6 @@ public class MainViewModel : INotifyPropertyChanged
     private readonly DatabaseService _db;
     private readonly ScanProgressService _scanProgress;
     private readonly ImageImportService _imageImport;
-    private readonly IFilePickerService? _filePicker;
     private CancellationTokenSource? _searchCts;
     private CancellationTokenSource? _scanCts;
 
@@ -169,7 +168,6 @@ public class MainViewModel : INotifyPropertyChanged
     public ICommand LoadMoreCommand { get; }
     public ICommand RescanCommand { get; }
     public ICommand CancelScanCommand { get; }
-    public ICommand AddImagesCommand { get; }
 
     public string StatusMessage
     {
@@ -189,18 +187,13 @@ public class MainViewModel : INotifyPropertyChanged
     public Visibility StatusMessageVisibility =>
         string.IsNullOrEmpty(_statusMessage) ? Visibility.Collapsed : Visibility.Visible;
 
-    public MainViewModel() : this(new DatabaseService(), (IFilePickerService?)null)
+    public MainViewModel() : this(new DatabaseService())
     {
     }
 
-    public MainViewModel(DatabaseService db) : this(db, (IFilePickerService?)null)
-    {
-    }
-
-    public MainViewModel(DatabaseService db, IFilePickerService? filePicker)
+    public MainViewModel(DatabaseService db)
     {
         _db = db;
-        _filePicker = filePicker;
         _imageImport = new ImageImportService(db);
         var scanner = new FolderScannerService(db);
         var tagger = new AiTaggingService(db);
@@ -210,14 +203,12 @@ public class MainViewModel : INotifyPropertyChanged
         LoadMoreCommand = new RelayCommand(() => { });
         RescanCommand = new RelayCommand(() => _ = StartRescanAsync(), () => !_isScanning);
         CancelScanCommand = new RelayCommand(() => _scanCts?.Cancel(), () => _isScanning);
-        AddImagesCommand = new RelayCommand(() => _ = AddImagesAsync());
         _ = LoadImagesAsync();
     }
 
     public MainViewModel(DatabaseService db, ScanProgressService scanProgressService)
     {
         _db = db;
-        _filePicker = null;
         _imageImport = new ImageImportService(db);
         _scanProgress = scanProgressService;
         DisplayedItems = new ObservableCollection<MediaItemViewModel>();
@@ -225,7 +216,6 @@ public class MainViewModel : INotifyPropertyChanged
         LoadMoreCommand = new RelayCommand(() => { });
         RescanCommand = new RelayCommand(() => _ = StartRescanAsync(), () => !_isScanning);
         CancelScanCommand = new RelayCommand(() => _scanCts?.Cancel(), () => _isScanning);
-        AddImagesCommand = new RelayCommand(() => _ = AddImagesAsync());
         _ = LoadImagesAsync();
     }
 
@@ -297,34 +287,12 @@ public class MainViewModel : INotifyPropertyChanged
         _ = LoadImagesAsync();
     }
 
-    private async Task AddImagesAsync()
+    public async Task ImportImagesAsync(IReadOnlyList<string> paths)
     {
-        if (_filePicker == null) return;
-
-        IReadOnlyList<string> paths;
-        try { paths = await _filePicker.PickImagesAsync(); }
-        catch (Exception ex)
-        {
-            await Console.Error.WriteLineAsync($"[AddImagesAsync] File picker failed: {ex}");
-            StatusMessage = "Error opening file picker";
-            _ = ClearStatusAfterDelayAsync();
-            return;
-        }
-
-        if (paths.Count == 0)
-        {
-            StatusMessage = "No valid paths entered";
-            _ = ClearStatusAfterDelayAsync();
-            return;
-        }
-
+        if (paths.Count == 0) return;
         var result = await _imageImport.ImportAsync(paths);
+        StatusMessage = $"Added {result.Added}, skipped {result.Skipped} duplicate(s).";
         await LoadImagesAsync();
-
-        StatusMessage = result.Added > 0
-            ? $"{result.Added} image(s) added"
-            : "No new images added";
-
         _ = ClearStatusAfterDelayAsync();
     }
 

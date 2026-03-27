@@ -41,7 +41,7 @@
             <TextBlock Text="Rescan" VerticalAlignment="Center"/>
           </StackPanel>
         </Button>
-        <Button Command="{x:Bind ViewModel.AddImagesCommand}">
+        <Button x:Name="AddImagesBtn">
           <ToolTipService.ToolTip>
             <ToolTip Content="Pick image files to add to the library"/>
           </ToolTipService.ToolTip>
@@ -57,8 +57,48 @@
                    Foreground="#2E7D32"/>
       </StackPanel>
 
+      <!-- Add Images Panel — hidden by default, shown when user clicks "Add Images" toolbar button -->
+      <Border x:Name="AddImagesPanel"
+              Grid.Row="1"
+              Visibility="Collapsed"
+              Background="{ThemeResource AppSurfaceBackground}"
+              BorderBrush="{ThemeResource AppBorderColor}"
+              BorderThickness="0,0,0,1"
+              Padding="16,12">
+          <StackPanel Spacing="8">
+              <TextBlock Text="Add Images" FontWeight="SemiBold" FontSize="14"/>
+
+              <!-- Folder row -->
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                  <TextBox x:Name="FolderPathBox"
+                           PlaceholderText="Folder path"
+                           MinWidth="360"
+                           HorizontalAlignment="Stretch"/>
+                  <Button x:Name="BrowseFolderBtn" Content="Browse"/>
+              </StackPanel>
+
+              <TextBlock x:Name="FolderStatusLabel"
+                         Text="Enter a folder path and click Browse."
+                         Foreground="{ThemeResource AppTextSecondary}"
+                         FontSize="12"/>
+
+              <ScrollViewer MaxHeight="240" HorizontalScrollMode="Disabled">
+                  <StackPanel x:Name="ImageChecklistPanel" Spacing="4"/>
+              </ScrollViewer>
+
+              <!-- Action buttons -->
+              <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                  <Button x:Name="CancelAddImagesBtn" Content="Cancel"/>
+                  <Button x:Name="AddSelectedBtn"
+                          Content="Add Selected"
+                          IsEnabled="False"
+                          Style="{StaticResource AccentButtonStyle}"/>
+              </StackPanel>
+          </StackPanel>
+      </Border>
+
       <!-- Thumbnail Grid with Scroll / Empty State -->
-      <Grid Grid.Row="1">
+      <Grid Grid.Row="2">
         <ScrollViewer x:Name="ThumbnailScroller"
                       ViewChanged="OnScrollViewChanged">
           <GridView x:Name="ThumbnailGrid"

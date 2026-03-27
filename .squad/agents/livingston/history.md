@@ -119,6 +119,28 @@
 
 
 
+### GTK GSettings Fatal Crash — XAML ContentDialog Picker — 2026-03-27
+
+**Bug fixed:** `GLib-GIO-ERROR: No GSettings schemas are installed on the system` — fatal crash on macOS when clicking "Add Images".
+
+**Root cause:** `FileOpenPicker` with `WinRT.Interop.InitializeWithWindow` triggers GTK's GSettings subsystem on macOS. GSettings schemas are not installed without extra Homebrew packages, causing a fatal GLib-GIO-ERROR that kills the process.
+
+**Fix:** Replaced `FilePickerService` entirely — no GTK native picker at all. New implementation uses a XAML `ContentDialog` with a `TextBox` so users type or paste file paths directly. Zero dependency on OS file picker APIs, GSettings, or WinRT.Interop.
+
+**Key implementation details:**
+- `ContentDialog` with `AcceptsReturn = true` TextBox (height 120) for multi-path input
+- Paths split on `\n`, `\r`, `;` — trimmed and validated via `File.Exists`
+- `XamlRoot` set via `(Application.Current as App)?.MainWindow?.Content?.XamlRoot` (instance, not static)
+- `MainViewModel.AddImagesAsync`: `paths.Count == 0` now sets `StatusMessage = "No valid paths entered"` instead of silently returning
+- Removed `using Windows.Storage.Pickers` and `WinRT.Interop` references
+
+**GTK Lesson:** `FileOpenPicker` + `InitializeWithWindow` = GSettings crash on macOS. Never use it on Uno GTK/Skia. Use XAML ContentDialog instead.
+
+**Build:** ✅ 0 errors, 0 warnings  
+**Commit:** 1938874 on dev
+
+---
+
 ### GTK File Picker Wiring — 2026-03-27
 
 **Bug fixed:** "Add Images" button did nothing on macOS GTK Skia.

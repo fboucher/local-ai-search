@@ -101,3 +101,50 @@ public async Task<IReadOnlyList<string>> PickImagesAsync()
 
 2026-03-27 — Livingston, fixing fatal crash on macOS GTK Skia  
 Commit: 1938874 on dev
+
+---
+
+## ✅ Recommended Pattern: Folder-Browse ContentDialog (Two-Step Picker)
+
+Instead of asking the user to type individual file paths, build a **folder browser** entirely in C# code inside `FilePickerService.cs`. This is the recommended approach for GTK/Uno.
+
+### UX
+1. Dialog opens → TextBox pre-filled with `~/Pictures`, status label, empty scroll area
+2. User edits path → clicks "Browse Folder" → `Directory.EnumerateFiles` populates `CheckBox` list
+3. User checks images → "Add Selected" primary button enables → returns selected paths
+
+### Code Skeleton
+
+```csharp
+private static readonly HashSet<string> SupportedExtensions = new(StringComparer.OrdinalIgnoreCase)
+    { ".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp" };
+
+var dialog = new ContentDialog
+{
+    Title = "Add Images",
+    PrimaryButtonText = "Add Selected",
+    CloseButtonText = "Cancel",
+    IsPrimaryButtonEnabled = false,         // enable only when ≥1 checked
+    DefaultButton = ContentDialogButton.Primary
+};
+
+// Folder row: TextBox + Button (Horizontal StackPanel)
+// Status TextBlock
+// ScrollViewer { MaxHeight=240, HorizontalScrollMode=ScrollMode.Disabled }
+//   └─ StackPanel of CheckBox items (Content=filename, Tag=fullPath)
+
+dialog.XamlRoot = (Application.Current as App)?.MainWindow?.Content?.XamlRoot;
+
+var checkedPaths = new HashSet<string>();
+void RefreshList(string folder) { /* EnumerateFiles → clear panel → add CheckBoxes */ }
+browseBtn.Click += (_, _) => RefreshList(folderBox.Text?.Trim() ?? "");
+RefreshList(folderBox.Text?.Trim() ?? "");   // auto-browse on open
+
+var result = await dialog.ShowAsync();
+return result == ContentDialogResult.Primary ? checkedPaths.ToList() : Array.Empty<string>();
+```
+
+### GTK Gotchas (remain relevant)
+- `Colors.Gray` requires `using Microsoft.UI;` — not `Microsoft.UI.Colors.Gray` inline
+- `XamlRoot` must be set before `ShowAsync()` or dialog will not display on GTK
+- Never use `FileOpenPicker` — GSettings crash still applies

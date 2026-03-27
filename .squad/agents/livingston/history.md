@@ -198,3 +198,28 @@ var files = await picker.PickMultipleFilesAsync();
 **PR:** #17 targeting dev
 
 **Status:** ✅ Completed (ready for merge after Bertha review)
+
+### Folder-Browse ContentDialog Pattern — 2026-06-XX
+
+**Feature:** Upgraded "Add Images" picker from manual path typing to a two-step folder browse + checkbox select.
+
+**UX Flow:**
+1. ContentDialog opens pre-filled with `~/Pictures`
+2. User edits folder path and clicks "Browse Folder" → checklist populates
+3. User checks desired images → "Add Selected" enables → dialog closes → import runs
+
+**Implementation Pattern (code-only, no XAML page):**
+- Build entire dialog content programmatically in `FilePickerService.cs`
+- `StackPanel` root with `Orientation=Horizontal` folder row (TextBox + Button)
+- `ScrollViewer { MaxHeight=240, HorizontalScrollMode=Disabled }` wrapping a `StackPanel` of `CheckBox` items
+- `IsPrimaryButtonEnabled` toggled by tracking a `HashSet<string> checkedPaths` in Checked/Unchecked handlers
+- Auto-browse pre-filled path on dialog open (call `RefreshList` before `ShowAsync`)
+- `Directory.EnumerateFiles` + extension filter via `HashSet<string>` (OrdinalIgnoreCase)
+
+**Key Rules:**
+- `Colors.Gray` (not `Microsoft.UI.Colors.Gray`) — use the `using Microsoft.UI;` import
+- `dialog.XamlRoot = (Application.Current as App)?.MainWindow?.Content?.XamlRoot` — required for ContentDialog on GTK
+- `IsPrimaryButtonEnabled = false` initially — only enable when checkedPaths.Count > 0
+- `HorizontalScrollMode = ScrollMode.Disabled` on ScrollViewer to prevent horizontal overflow
+
+**Build Result:** ✅ 0 errors, 0 warnings

@@ -324,3 +324,24 @@ dotnet run
 - PR #14 review and merge to dev
 - Live endpoint integration when AI service becomes available
 
+
+### 2026-06-10 — Bug Fix: `no such table: media_items`
+
+**Branch:** `dev`
+**Commit:** `23f71c6`
+**Status:** ✅ Completed
+
+**Bug:** `SQLite Error 1: 'no such table: media_items'` when user clicks "Add Images" without first running Rescan.
+
+**Root cause:** `DatabaseService.InitializeAsync()` was only called via the Rescan flow (`ScanProgressService.RunAsync()`). If the user added images before ever running a Rescan, the `media_items` table didn't exist yet.
+
+**Fix:**
+- Added `await _db.InitializeAsync()` as the first line of `ImageImportService.ImportAsync()` — guarantees schema exists before any import DB operations.
+- Added `await _db.InitializeAsync()` inside `MainViewModel.LoadImagesAsync()` before any query — guarantees schema exists on first grid load.
+- `InitializeAsync` uses `CREATE TABLE IF NOT EXISTS`, so calling it multiple times is safe (idempotent).
+
+**Files changed:**
+- `src/LocalAiSearch/Services/ImageImportService.cs`
+- `src/LocalAiSearch/ViewModels/MainViewModel.cs`
+
+**Tests:** 46/46 passed. Zero build warnings/errors.

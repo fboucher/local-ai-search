@@ -18,7 +18,9 @@ namespace LocalAiSearch.ViewModels;
 public class MainViewModel : INotifyPropertyChanged
 {
     private readonly DatabaseService _db;
+    private readonly ScanProgressService _scanProgress;
     private CancellationTokenSource? _searchCts;
+    private CancellationTokenSource? _scanCts;
 
     private MediaItemViewModel? _selectedItem;
     private string _searchQuery = string.Empty;
@@ -26,6 +28,10 @@ public class MainViewModel : INotifyPropertyChanged
     private bool _sortAscending = false;
     private string _selectedMediaType = "All";
     private bool _isEmpty;
+    private bool _isScanning;
+    private string _scanProgressText = string.Empty;
+    private string _currentScanFile = string.Empty;
+    private double _scanProgressValue;
 
     public ObservableCollection<MediaItemViewModel> DisplayedItems { get; }
 
@@ -102,8 +108,64 @@ public class MainViewModel : INotifyPropertyChanged
     /// <summary>Drives empty-state panel visibility without requiring a XAML converter.</summary>
     public Visibility EmptyStateVisibility => _isEmpty ? Visibility.Visible : Visibility.Collapsed;
 
+    public bool IsScanning
+    {
+        get => _isScanning;
+        private set
+        {
+            if (_isScanning != value)
+            {
+                _isScanning = value;
+                OnPropertyChanged();
+                ((RelayCommand)RescanCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)CancelScanCommand).RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    public string ScanProgressText
+    {
+        get => _scanProgressText;
+        private set
+        {
+            if (_scanProgressText != value)
+            {
+                _scanProgressText = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    public string CurrentScanFile
+    {
+        get => _currentScanFile;
+        private set
+        {
+            if (_currentScanFile != value)
+            {
+                _currentScanFile = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    public double ScanProgressValue
+    {
+        get => _scanProgressValue;
+        private set
+        {
+            if (_scanProgressValue != value)
+            {
+                _scanProgressValue = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
     public ICommand SortToggleCommand { get; }
     public ICommand LoadMoreCommand { get; }
+    public ICommand RescanCommand { get; }
+    public ICommand CancelScanCommand { get; }
 
     public MainViewModel() : this(new DatabaseService())
     {
@@ -112,10 +174,81 @@ public class MainViewModel : INotifyPropertyChanged
     public MainViewModel(DatabaseService db)
     {
         _db = db;
+        var scanner = new FolderScannerService(db);
+        var tagger = new AiTaggingService(db);
+        _scanProgress = new ScanProgressService(scanner, tagger);
         DisplayedItems = new ObservableCollection<MediaItemViewModel>();
         SortToggleCommand = new RelayCommand(ToggleSort);
         LoadMoreCommand = new RelayCommand(() => { });
+        RescanCommand = new RelayCommand(() => _ = StartRescanAsync(), () => !_isScanning);
+        CancelScanCommand = new RelayCommand(() => _scanCts?.Cancel(), () => _isScanning);
         _ = LoadImagesAsync();
+    }
+
+    public MainViewModel(DatabaseService db, ScanProgressService scanProgressService)
+    {
+        _db = db;
+        _scanProgress = scanProgressService;
+        DisplayedItems = new ObservableCollection<MediaItemViewModel>();
+        SortToggleCommand = new RelayCommand(ToggleSort);
+        LoadMoreCommand = new RelayCommand(() => { });
+        RescanCommand = new RelayCommand(() => _ = StartRescanAsync(), () => !_isScanning);
+        CancelScanCommand = new RelayCommand(() => _scanCts?.Cancel(), () => _isScanning);
+        _ = LoadImagesAsync();
+    }
+
+    private async Task StartRescanAsync()
+    {
+        if (_isScanning) return;
+
+        _scanCts = new CancellationTokenSource();
+        IsScanning = true;
+        ScanProgressText = "Starting scan…";
+        ScanProgressValue = 0;
+        CurrentScanFile = string.Empty;
+
+        var progress = new Progress<ScanProgress>(p =>
+        {
+            CurrentScanFile = p.CurrentFile;
+            switch (p.Phase)
+            {
+                case ScanPhase.Scanning:
+                    ScanProgressText = "Scanning folder…";
+                    ScanProgressValue = 0;
+                    break;
+                case ScanPhase.Tagging:
+                    ScanProgressText = p.Total > 0
+                        ? $"Processing image {p.Current} of {p.Total}"
+                        : "Tagging images…";
+                    ScanProgressValue = p.Total > 0 ? (double)p.Current / p.Total * 100.0 : 0;
+                    break;
+                case ScanPhase.Complete:
+                    ScanProgressText = "Scan complete";
+                    ScanProgressValue = 100;
+                    CurrentScanFile = string.Empty;
+                    break;
+            }
+        });
+
+        try
+        {
+            await _scanProgress.RunAsync(null, progress, _scanCts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            ScanProgressText = "Scan cancelled";
+        }
+        catch (Exception ex)
+        {
+            ScanProgressText = $"Scan error: {ex.Message}";
+        }
+        finally
+        {
+            IsScanning = false;
+            _scanCts?.Dispose();
+            _scanCts = null;
+            await LoadImagesAsync();
+        }
     }
 
     private void ToggleSort()

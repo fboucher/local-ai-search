@@ -184,6 +184,16 @@
       
       <!-- Metadata Panel -->
       <StackPanel Grid.Row="2" Spacing="10">
+        <!-- Analyze button — disabled until an image is selected -->
+        <Button x:Name="AnalyzeBtn"
+                IsEnabled="False"
+                HorizontalAlignment="Stretch">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <TextBlock Text="🔍" FontSize="14" VerticalAlignment="Center"/>
+            <TextBlock Text="Analyze" VerticalAlignment="Center"/>
+          </StackPanel>
+        </Button>
+
         <TextBlock Text="Metadata" 
                    FontSize="14" 
                    FontWeight="SemiBold"

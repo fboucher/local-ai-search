@@ -139,6 +139,39 @@ public class DatabaseService
         return null;
     }
 
+    public async Task<MediaItem?> GetByFilePathAsync(string filePath)
+    {
+        var connection = GetConnection();
+        var shouldDispose = ShouldDisposeConnection();
+
+        try
+        {
+            if (connection.State != System.Data.ConnectionState.Open)
+            {
+                await connection.OpenAsync();
+            }
+
+            var command = connection.CreateCommand();
+            command.CommandText = "SELECT * FROM media_items WHERE file_path = $filePath";
+            command.Parameters.AddWithValue("$filePath", filePath);
+
+            using var reader = await command.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                return ReadMediaItem(reader);
+            }
+        }
+        finally
+        {
+            if (shouldDispose)
+            {
+                connection.Dispose();
+            }
+        }
+
+        return null;
+    }
+
     public async Task<MediaItem?> GetByHashAsync(string hash)
     {
         var connection = GetConnection();

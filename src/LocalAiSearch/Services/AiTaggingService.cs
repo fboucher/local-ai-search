@@ -1,6 +1,8 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using LocalAiSearch.Models;
+using OpenAI;
+using OpenAI.Chat;
 
 namespace LocalAiSearch.Services;
 
@@ -21,6 +23,9 @@ public class AiTaggingService
     private readonly bool _isStub;
 
     private const string DefaultModel = "local-model";
+    private const string DefaultAnalysisModel = "llava";
+    private const string DefaultAnalysisEndpoint = "http://192.168.2.11:8000/v1";
+
     private const string TaggingPrompt =
         "Describe this image. Provide:\n" +
         "1) A one-sentence description.\n" +
@@ -30,6 +35,12 @@ public class AiTaggingService
         "DESCRIPTION: <description>\n" +
         "TAGS: <tag1,tag2,tag3,tag4,tag5>\n" +
         "TYPE: <photo|screenshot|image>";
+
+    private const string AnalysisPrompt =
+        "Describe this image in 1-2 sentences. Then list 5-10 relevant tags separated by commas. " +
+        "Format your response as:\n" +
+        "DESCRIPTION: [description]\n" +
+        "TAGS: [tag1, tag2, ...]";
 
     public AiTaggingService(DatabaseService db, string? endpointUrl = null, HttpClient? httpClient = null)
     {
@@ -84,6 +95,54 @@ public class AiTaggingService
         {
             return new TaggingResult(false, null, null, null, ex.Message);
         }
+    }
+
+    /// <summary>
+    /// Analyzes a single image using the local OpenAI-compatible vision endpoint.
+    /// Reads the file from disk, sends it as a base64 vision request, parses the response,
+    /// and updates the matching row in the database. Returns the extracted description and tags.
+    /// </summary>
+    public async Task<(string Description, string Tags)> AnalyzeImageAsync(string imagePath, CancellationToken ct = default)
+    {
+        if (!File.Exists(imagePath))
+            throw new FileNotFoundException($"Image not found: {imagePath}", imagePath);
+
+        var imageBytes = await File.ReadAllBytesAsync(imagePath, ct);
+        var mimeType = GetMimeType(imagePath);
+
+        var analysisEndpoint = Environment.GetEnvironmentVariable("AI_ENDPOINT") ?? DefaultAnalysisEndpoint;
+        var model = Environment.GetEnvironmentVariable("AI_MODEL") ?? DefaultAnalysisModel;
+
+        var clientOptions = new OpenAIClientOptions { Endpoint = new Uri(analysisEndpoint) };
+        var openAiClient = new OpenAIClient(new ApiKeyCredential("sk-local"), clientOptions);
+        var chatClient = openAiClient.GetChatClient(model);
+
+        var imagePart = ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(imageBytes), mimeType);
+        var textPart = ChatMessageContentPart.CreateTextPart(AnalysisPrompt);
+
+        var messages = new List<ChatMessage>
+        {
+            new UserChatMessage(imagePart, textPart)
+        };
+
+        var completion = await chatClient.CompleteChatAsync(messages, cancellationToken: ct);
+        var responseText = completion.Value.Content[0].Text ?? string.Empty;
+
+        var parsed = ParseAiResponse(responseText);
+        var description = parsed.Description ?? string.Empty;
+        var tags = parsed.Tags ?? string.Empty;
+
+        var item = await _db.GetByFilePathAsync(imagePath);
+        if (item != null)
+        {
+            item.Description = description;
+            item.Tags = tags;
+            item.IsTagged = true;
+            item.UpdatedAt = DateTime.UtcNow;
+            await _db.UpdateAsync(item);
+        }
+
+        return (description, tags);
     }
 
     public async Task<TaggingBatchResult> TagAllUnprocessedAsync(CancellationToken ct = default)

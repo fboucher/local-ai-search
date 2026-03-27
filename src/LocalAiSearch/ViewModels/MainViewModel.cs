@@ -20,6 +20,7 @@ public class MainViewModel : INotifyPropertyChanged
     private readonly DatabaseService _db;
     private readonly ScanProgressService _scanProgress;
     private readonly ImageImportService _imageImport;
+    private readonly AiTaggingService _aiTaggingService;
     private CancellationTokenSource? _searchCts;
     private CancellationTokenSource? _scanCts;
 
@@ -197,6 +198,7 @@ public class MainViewModel : INotifyPropertyChanged
         _imageImport = new ImageImportService(db);
         var scanner = new FolderScannerService(db);
         var tagger = new AiTaggingService(db);
+        _aiTaggingService = tagger;
         _scanProgress = new ScanProgressService(scanner, tagger);
         DisplayedItems = new ObservableCollection<MediaItemViewModel>();
         SortToggleCommand = new RelayCommand(ToggleSort);
@@ -210,6 +212,7 @@ public class MainViewModel : INotifyPropertyChanged
     {
         _db = db;
         _imageImport = new ImageImportService(db);
+        _aiTaggingService = new AiTaggingService(db);
         _scanProgress = scanProgressService;
         DisplayedItems = new ObservableCollection<MediaItemViewModel>();
         SortToggleCommand = new RelayCommand(ToggleSort);
@@ -287,12 +290,39 @@ public class MainViewModel : INotifyPropertyChanged
         _ = LoadImagesAsync();
     }
 
+    /// <summary>
+    /// Analyzes a single image using the AI service. Implementation added by Rusty.
+    /// </summary>
+    public virtual Task AnalyzeImageAsync(MediaItemViewModel item)
+    {
+        StatusMessage = "Analysis not yet available.";
+        _ = ClearStatusAfterDelayAsync();
+        return Task.CompletedTask;
+    }
+
     public async Task ImportImagesAsync(IReadOnlyList<string> paths)
     {
         if (paths.Count == 0) return;
         var result = await _imageImport.ImportAsync(paths);
         StatusMessage = $"Added {result.Added}, skipped {result.Skipped} duplicate(s).";
         await LoadImagesAsync();
+        _ = ClearStatusAfterDelayAsync();
+    }
+
+    public async Task AnalyzeImageAsync(MediaItemViewModel item)
+    {
+        StatusMessage = "Analyzing…";
+        try
+        {
+            var (description, _) = await _aiTaggingService.AnalyzeImageAsync(item.FilePath);
+            var preview = description.Length > 50 ? description[..50] + "…" : description;
+            StatusMessage = $"Done — {preview}";
+            await LoadImagesAsync();
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Analysis failed: {ex.Message}";
+        }
         _ = ClearStatusAfterDelayAsync();
     }
 

@@ -58,6 +58,12 @@ public sealed partial class MainPage : Page
         };
         CancelAddImagesBtn.Click += (_, _) => HideAddImagesPanel();
         AddSelectedBtn.Click += async (_, _) => await CommitSelectedImages();
+
+        AnalyzeBtn.Click += async (_, _) =>
+        {
+            if (ViewModel.SelectedItem is { } item)
+                await ViewModel.AnalyzeImageAsync(item);
+        };
     }
 
     private void ShowAddImagesPanel()
@@ -123,6 +129,11 @@ public sealed partial class MainPage : Page
         if (ThumbnailGrid.SelectedItem is MediaItemViewModel selectedItem)
         {
             ViewModel.SelectedItem = selectedItem;
+            AnalyzeBtn.IsEnabled = true;
+        }
+        else
+        {
+            AnalyzeBtn.IsEnabled = false;
         }
     }
 

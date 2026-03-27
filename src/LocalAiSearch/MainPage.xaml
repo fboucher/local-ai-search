@@ -68,17 +68,32 @@
           <StackPanel Spacing="8">
               <TextBlock Text="Add Images" FontWeight="SemiBold" FontSize="14"/>
 
-              <!-- Folder row -->
+              <!-- Quick-access shortcuts -->
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                  <Button x:Name="ShortcutPictures" Content="📁 Pictures"/>
+                  <Button x:Name="ShortcutDownloads" Content="📁 Downloads"/>
+                  <Button x:Name="ShortcutDocuments" Content="📁 Documents"/>
+                  <Button x:Name="ShortcutDesktop" Content="📁 Desktop"/>
+                  <Button x:Name="ShortcutHome" Content="📁 Home"/>
+              </StackPanel>
+
+              <!-- Subfolder browser -->
+              <ScrollViewer MaxHeight="120" HorizontalScrollMode="Disabled">
+                  <StackPanel x:Name="SubfolderPanel" Spacing="2"/>
+              </ScrollViewer>
+
+              <!-- Manual path entry (fallback) -->
+              <TextBlock Text="Or type a path:" FontSize="11" Foreground="{ThemeResource AppTextSecondary}"/>
               <StackPanel Orientation="Horizontal" Spacing="8">
                   <TextBox x:Name="FolderPathBox"
                            PlaceholderText="Folder path"
                            MinWidth="360"
                            HorizontalAlignment="Stretch"/>
-                  <Button x:Name="BrowseFolderBtn" Content="Browse"/>
+                  <Button x:Name="BrowseFolderBtn" Content="Go"/>
               </StackPanel>
 
               <TextBlock x:Name="FolderStatusLabel"
-                         Text="Enter a folder path and click Browse."
+                         Text="Select a folder above or type a path."
                          Foreground="{ThemeResource AppTextSecondary}"
                          FontSize="12"/>
 

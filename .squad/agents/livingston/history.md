@@ -272,3 +272,27 @@ var files = await picker.PickMultipleFilesAsync();
 
 **Build Result:** ✅ 0 errors, 0 warnings  
 **Commit:** 87bf461 on dev
+
+### In-Page Panel Replaces ContentDialog Picker — GTK Input Event Fix — 2026-06-XX
+
+**Bug fixed:** Button.Click, TextBox.TextChanged, CheckBox.Checked inside ContentDialog content area silently swallowed on Uno GTK Skia renderer.
+
+**Root cause:** Uno GTK Skia input dispatch does not forward pointer/click events to controls nested inside a ContentDialog's content area. The dialog shows correctly but all interactive children are dead.
+
+**Fix:** Removed ContentDialog-based picker entirely. Added a collapsible `<Border x:Name="AddImagesPanel">` directly in `MainPage.xaml` as a standard page control. Regular page controls on GTK always receive events correctly.
+
+**Architecture changes:**
+- Deleted `FilePickerService.cs` and `IFilePickerService.cs` — abstraction no longer needed.
+- All panel logic (RefreshImageList, ShowAddImagesPanel, HideAddImagesPanel, CommitSelectedImages) moved to `MainPage.xaml.cs` code-behind.
+- `MainViewModel.ImportImagesAsync(IReadOnlyList<string> paths)` replaces `AddImagesAsync()` — takes paths directly, no file picker dependency.
+- Removed `AddImagesCommand` from ViewModel and `IFilePickerService` field/constructor parameter.
+- "Add Images" toolbar button wired via click event in code-behind, not a Command.
+
+**GTK Rules:**
+- ContentDialog child controls (Button, TextBox, CheckBox) are silently dead on Uno GTK Skia renderer. NEVER use ContentDialog for interactive pickers on GTK.
+- In-page collapsible panels are the GTK-safe alternative to modal dialogs for interactive content.
+
+**ThemeResource safety:** Used only resources defined in App.xaml (`AppSurfaceBackground`, `AppBorderColor`, `AppTextSecondary`). No undefined resource references.
+
+**Build Result:** ✅ 0 errors, 0 warnings
+**Commit:** 4cbe246 on dev

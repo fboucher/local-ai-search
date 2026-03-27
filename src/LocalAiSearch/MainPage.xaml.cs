@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using NativeFileDialogExtendedSharp;
 using LocalAiSearch.Services;
 using LocalAiSearch.ViewModels;
 
@@ -26,32 +27,28 @@ public sealed partial class MainPage : Page
     {
         InitializeComponent();
         ViewModel = new MainViewModel(new DatabaseService());
-        FolderPathBox.Text = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
 
         AddImagesBtn.Click += (_, _) => ShowAddImagesPanel();
-        BrowseFolderBtn.Click += (_, _) => NavigateTo(FolderPathBox.Text?.Trim() ?? "");
-        FolderPathBox.TextChanged += (_, _) =>
+        BrowseFolderBtn.Click += async (_, _) =>
         {
-            var text = FolderPathBox.Text?.Trim() ?? "";
-            if (text.Length > 3) RefreshImageList(text);
+            var result = Nfd.PickFolder();
+            if (result.Status == NfdStatus.Ok && result.Path is string path)
+            {
+                FolderPathBox.Text = path;
+                RefreshImageList(path);
+            }
         };
         CancelAddImagesBtn.Click += (_, _) => HideAddImagesPanel();
         AddSelectedBtn.Click += async (_, _) => await CommitSelectedImages();
-
-        ShortcutPictures.Click += (_, _) => NavigateTo(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures));
-        ShortcutDownloads.Click += (_, _) => NavigateTo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads"));
-        ShortcutDocuments.Click += (_, _) => NavigateTo(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
-        ShortcutDesktop.Click += (_, _) => NavigateTo(Environment.GetFolderPath(Environment.SpecialFolder.Desktop));
-        ShortcutHome.Click += (_, _) => NavigateTo(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
     }
 
     private void ShowAddImagesPanel()
     {
         _checkedImagePaths.Clear();
+        ImageChecklistPanel.Children.Clear();
+        AddSelectedBtn.IsEnabled = false;
+        FolderStatusLabel.Text = "Click Browse to pick a folder.";
         AddImagesPanel.Visibility = Visibility.Visible;
-        var path = FolderPathBox.Text?.Trim() ?? "";
-        RefreshFolderList(path);
-        RefreshImageList(path);
     }
 
     private void HideAddImagesPanel()
@@ -60,55 +57,6 @@ public sealed partial class MainPage : Page
         ImageChecklistPanel.Children.Clear();
         _checkedImagePaths.Clear();
         AddSelectedBtn.IsEnabled = false;
-    }
-
-    private void NavigateTo(string path)
-    {
-        FolderPathBox.Text = path;
-        RefreshFolderList(path);
-        RefreshImageList(path);
-    }
-
-    private void RefreshFolderList(string folderPath)
-    {
-        SubfolderPanel.Children.Clear();
-        if (!Directory.Exists(folderPath)) return;
-
-        var parent = Directory.GetParent(folderPath)?.FullName;
-        var upBtn = new Button
-        {
-            Content = "↑ Up",
-            IsEnabled = parent != null,
-            Margin = new Thickness(0, 0, 0, 4)
-        };
-        if (parent != null)
-            upBtn.Click += (_, _) =>
-            {
-                FolderPathBox.Text = parent;
-                RefreshFolderList(parent);
-                RefreshImageList(parent);
-            };
-        SubfolderPanel.Children.Add(upBtn);
-
-        try
-        {
-            var dirs = Directory.EnumerateDirectories(folderPath)
-                .OrderBy(d => Path.GetFileName(d))
-                .ToList();
-            foreach (var dir in dirs)
-            {
-                var name = Path.GetFileName(dir);
-                var btn = new Button { Content = $"📁 {name}", Tag = dir };
-                btn.Click += (_, _) =>
-                {
-                    FolderPathBox.Text = dir;
-                    RefreshFolderList(dir);
-                    RefreshImageList(dir);
-                };
-                SubfolderPanel.Children.Add(btn);
-            }
-        }
-        catch (UnauthorizedAccessException) { /* skip inaccessible dirs */ }
     }
 
     private void RefreshImageList(string folderPath)

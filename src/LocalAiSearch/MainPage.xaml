@@ -65,35 +65,21 @@
               BorderBrush="{ThemeResource AppBorderColor}"
               BorderThickness="0,0,0,1"
               Padding="16,12">
-          <StackPanel Spacing="8">
+          <StackPanel Spacing="12">
               <TextBlock Text="Add Images" FontWeight="SemiBold" FontSize="14"/>
 
-              <!-- Quick-access shortcuts -->
-              <StackPanel Orientation="Horizontal" Spacing="4">
-                  <Button x:Name="ShortcutPictures" Content="📁 Pictures"/>
-                  <Button x:Name="ShortcutDownloads" Content="📁 Downloads"/>
-                  <Button x:Name="ShortcutDocuments" Content="📁 Documents"/>
-                  <Button x:Name="ShortcutDesktop" Content="📁 Desktop"/>
-                  <Button x:Name="ShortcutHome" Content="📁 Home"/>
-              </StackPanel>
-
-              <!-- Subfolder browser -->
-              <ScrollViewer MaxHeight="120" HorizontalScrollMode="Disabled">
-                  <StackPanel x:Name="SubfolderPanel" Spacing="2"/>
-              </ScrollViewer>
-
-              <!-- Manual path entry (fallback) -->
-              <TextBlock Text="Or type a path:" FontSize="11" Foreground="{ThemeResource AppTextSecondary}"/>
+              <!-- Folder selection row -->
               <StackPanel Orientation="Horizontal" Spacing="8">
                   <TextBox x:Name="FolderPathBox"
-                           PlaceholderText="Folder path"
+                           PlaceholderText="Select a folder..."
+                           IsReadOnly="True"
                            MinWidth="360"
                            HorizontalAlignment="Stretch"/>
-                  <Button x:Name="BrowseFolderBtn" Content="Go"/>
+                  <Button x:Name="BrowseFolderBtn" Content="Browse…"/>
               </StackPanel>
 
               <TextBlock x:Name="FolderStatusLabel"
-                         Text="Select a folder above or type a path."
+                         Text="Click Browse to pick a folder."
                          Foreground="{ThemeResource AppTextSecondary}"
                          FontSize="12"/>
 

@@ -133,3 +133,5 @@
 /Users/frank/dev/local-ai-search/src/LocalAiSearch/obj/Debug/net10.0/LocalAiSearch.pdb
 /Users/frank/dev/local-ai-search/src/LocalAiSearch/obj/Debug/net10.0/LocalAiSearch.genruntimeconfig.cache
 /Users/frank/dev/local-ai-search/src/LocalAiSearch/obj/Debug/net10.0/ref/LocalAiSearch.dll
+/Users/frank/dev/local-ai-search/src/LocalAiSearch/bin/Debug/net10.0/NativeFileDialogExtendedSharp.dll
+/Users/frank/dev/local-ai-search/src/LocalAiSearch/bin/Debug/net10.0/nfd.dll

@@ -296,3 +296,5 @@ var files = await picker.PickMultipleFilesAsync();
 
 **Build Result:** ✅ 0 errors, 0 warnings
 **Commit:** 4cbe246 on dev
+- Built GTK-safe folder browser using only Button + ScrollViewer + StackPanel controls
+- Quick-access shortcuts + drillable subfolder list replace any native OS folder picker

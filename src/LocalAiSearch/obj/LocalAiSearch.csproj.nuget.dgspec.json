@@ -48,6 +48,10 @@
               "target": "Package",
               "version": "[*, )"
             },
+            "NativeFileDialogExtendedSharp": {
+              "target": "Package",
+              "version": "[0.1.0, )"
+            },
             "Uno.Extensions.Hosting": {
               "target": "Package",
               "version": "[*, )"

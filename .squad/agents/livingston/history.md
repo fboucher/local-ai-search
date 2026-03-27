@@ -14,6 +14,28 @@
 
 ## Learnings
 
+### Search & Filter UI (Slice #7) — 2026-03-27
+
+**Built:** Wired search bar, media type filter, sort toggle, and empty state to real DatabaseService.
+
+**Changes Made:**
+1. **MainViewModel.cs**: Added DatabaseService injection (default `./local.db`), SearchQuery 300ms debounce via CancellationTokenSource, SelectedMediaType property, IsEmpty + EmptyStateVisibility (Visibility type — avoids XAML converter), LoadImagesAsync that calls GetAllAsync/SearchAsync + client-side MediaType filter + sort.
+2. **MainPage.xaml**: Added ComboBox for media type (ItemsSource bound to ViewModel.MediaTypeOptions), wired TextBox with UpdateSourceTrigger=PropertyChanged, added empty state StackPanel visible when EmptyStateVisibility is set.
+3. **LocalAiSearch.csproj**: Added Microsoft.Data.Sqlite package (was missing — pre-existing issue blocking build).
+
+**MVVM Patterns Used:**
+- Debounce with CancellationTokenSource + Task.Delay(300ms) — cancel previous on new input
+- Expose `Visibility EmptyStateVisibility` property from ViewModel instead of XAML converter (pragmatic for Uno/WinUI)
+- `MediaTypeOptions` must be an instance property, not `static readonly` — XAML source generator accesses it via instance path through {x:Bind ViewModel.X}
+
+**Uno Platform Gotchas:**
+- `static readonly` fields on ViewModel bound via `{x:Bind ViewModel.Field}` cause CS0176 ("cannot be accessed with an instance reference") — always use instance property for anything bound via {x:Bind}
+- `UpdateSourceTrigger=PropertyChanged` on TextBox is required for live-on-keypress search
+
+**Build Result:** ✅ 0 errors, 0 warnings
+
+**PR:** #15 targeting dev
+
 ### Basic Image Viewer UI (Slice #4) — 2025-03-26
 
 **Built:** Complete two-panel image viewer UI with MVVM pattern and mock data.

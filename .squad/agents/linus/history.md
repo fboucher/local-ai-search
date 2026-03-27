@@ -88,3 +88,58 @@
 - PR #14 review and merge to dev
 - Tests ready for CI/CD validation
 - Batch and Base64 patterns validate real endpoint will work correctly
+
+### 2026-03-27 — Slice #8 — ScanProgressService Tests
+
+**Branch:** `squad/8-rescan-progress`  
+**PR:** #16 (targeting dev)  
+**Status:** ✅ Complete (6 new tests, all passing)  
+
+**What I tested:**
+
+1. **Progress Reporting Test**
+   - Validates `IProgress<ScanProgress>` invocations during scan
+   - Confirms granular "Processing image X of Y" messages
+   - Verifies progress callbacks occur for each item processed
+
+2. **Cancellation Token Test**
+   - Confirms `CancellationToken` propagates through `RunAsync`
+   - Validates scan stops gracefully when cancellation is triggered
+   - Checks that partial results are committed before cancellation
+
+3. **Folder Resolution Test**
+   - Validates `SCAN_FOLDER` env var takes precedence
+   - Tests fallback to `Environment.SpecialFolder.MyPictures`
+   - Confirms path resolution works with various env states
+
+4. **Per-Item Tagging Loop Test**
+   - Validates service calls `AiTaggingService.TagImageAsync` per item
+   - Confirms loop continues on individual item failures
+   - Checks database state after each item tagged
+
+5. **Success/Failure Scenario Tests** (2 more)
+   - Happy path: all items tagged successfully
+   - Partial failure: some items fail, scan continues, rest succeed
+
+**Test Infrastructure:**
+- Mock `IProgress<ScanProgress>` to capture progress reports
+- Mock `CancellationToken` for cancellation testing
+- In-memory database for test isolation (shared with DatabaseService tests)
+- Mock `AiTaggingService` for predictable behavior
+
+**Test Coverage Summary:**
+- **Total ScanProgressService tests:** 6 passing
+- **Integration:** Works with existing AiTaggingService and DatabaseService mocks
+- **Build:** 0 errors, 0 warnings
+
+**Key learnings:**
+- `IProgress<T>` is inherently testable with mock implementations
+- `CancellationToken.CreateLinkedTokenSource()` pattern enables precise cancellation testing
+- Per-item loop allows partial progress reporting (critical for UI responsiveness)
+- Folder env var fallback must be tested separately from main scan logic
+
+**Next steps:**
+- PR #16 review and merge to dev
+- Slice #9 (Theming) ready to merge in parallel
+- Combined, Slices #7-9 complete the rescan/progress/theming stack
+

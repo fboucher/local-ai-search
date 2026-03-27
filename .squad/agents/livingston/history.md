@@ -119,14 +119,14 @@
 
 
 
-### Dark/Light Theming (Slice #8) — 2026-03-27
+### Dark/Light Theming (Slice #9) — 2026-03-27
 
 **Built:** System-aware dark/light theming using ResourceDictionary.ThemeDictionaries.
 
 **Changes Made:**
-1. **App.xaml**: Replaced empty MergedDictionaries TODO with inline `ResourceDictionary.ThemeDictionaries` with `Light` and `Dark` keys. 10 named brushes per theme.
+1. **App.xaml**: Replaced empty MergedDictionaries TODO with inline `ResourceDictionary.ThemeDictionaries` with `Light` and `Dark` keys. 11 custom named brushes per theme (AppBackground, AppSurfaceBackground, AppCardBackground, AppPreviewBackground, AppTextPrimary, AppTextSecondary, AppTextTertiary, AppBorderColor, AppBorderStrong, AppAccentColor).
 2. **App.xaml.cs**: On `OnLaunched`, read `Application.RequestedTheme` and set `rootFrame.RequestedTheme = ElementTheme.Dark/Light` explicitly — required for GTK Skia to resolve ThemeDictionary resources.
-3. **MainPage.xaml**: Replaced all 15 hardcoded hex colors with `{ThemeResource ...}` references. Layout unchanged.
+3. **MainPage.xaml**: Replaced all hardcoded hex colors with `{ThemeResource AppXxx}` references. Layout unchanged.
 
 **GTK Theming Lessons:**
 - `{ThemeResource ApplicationPageBackgroundThemeBrush}` fails silently on GTK Skia — never use WinUI built-in ThemeResources without Uno GTK verification.
@@ -135,6 +135,20 @@
 - `RequestedThemeChanged` event does NOT compile (CS0246: RequestedThemeChangedEventArgs not found). Use startup-only detection for now.
 - Setting `Frame.RequestedTheme` explicitly is required — just defining ThemeDictionaries is not sufficient on GTK Skia.
 
+**Defined Brushes (Light/Dark pairs):**
+- AppBackground: White / #FF1E1E1E
+- AppSurfaceBackground: #FFF5F5F5 / #FF2D2D2D
+- AppCardBackground: #FFE0E0E0 / #FF3E3E3E
+- AppPreviewBackground: White / #FF252525
+- AppTextPrimary: #FF1E1E1E / #FFEFEFEF
+- AppTextSecondary: #FF666666 / #FFAAAAAA
+- AppTextTertiary: #FF999999 / #FF777777
+- AppBorderColor: #FFCCCCCC / #FF555555
+- AppBorderStrong: #FF888888 / #FF888888
+- AppAccentColor: #FF0078D4 / #FF60CDFF
+
 **Build Result:** ✅ 0 errors, 0 warnings
 
 **PR:** #17 targeting dev
+
+**Status:** ✅ Completed (ready for merge after Bertha review)

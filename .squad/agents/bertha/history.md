@@ -42,3 +42,19 @@
 - Dev branch now has: Bootstrap + DB + Scanner + Image Viewer (4 slices complete)
 - Key learning: Build artifacts (bin/obj) should be gitignored to prevent merge conflicts
 - All PRs had to be retargeted from main/bootstrap-branch to dev before merging
+
+### 2026-03-27 — Slices #7/#8 PR Review & Merge
+- ✅ Completed: Reviewed and merged PR #16 (Rescan & Progress, Issue #8)
+  - ScanProgressService: clean IProgress<ScanProgress> + CancellationToken pattern
+  - ScanPhase enum (Scanning/Tagging/Complete) + ScanProgress record
+  - MainViewModel: RescanCommand, CancelScanCommand, IsScanning, ScanProgressText, ScanProgressValue
+  - Layer separation respected: service has no XAML, ViewModel has no filesystem calls
+  - 39/39 tests passing (33 prior + 6 new from Linus), 0 errors, 0 warnings
+- ✅ Completed: Reviewed and merged PR #17 (Dark/light theming, Issue #9)
+  - App.xaml: ThemeDictionaries with explicit Light/Dark ResourceDictionaries, 10 AppXxx brush keys each
+  - App.xaml.cs: Frame.RequestedTheme set on OnLaunched from Application.RequestedTheme — required for GTK Skia
+  - MainPage.xaml: All hardcoded hex colors replaced with {ThemeResource AppXxx} — no WinUI built-in brushes
+  - ApplicationPageBackgroundThemeBrush absent — GTK layout bug avoided
+  - 33/33 tests passing, 0 errors, 0 warnings
+- Dev branch now has all 8 slices: Bootstrap + DB + Scanner + Image Viewer + AI Tagging + Search + Rescan + Theming
+- Final dev state: 39/39 tests, 0 errors, 0 warnings

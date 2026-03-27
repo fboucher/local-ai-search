@@ -237,6 +237,46 @@ new GtkHost(() => new App()).Run();
 - Slice #5: Folder Scanner (uses DatabaseService to check for duplicates via GetByHashAsync)
 - Slice #6: AI Tagging (updates MediaItem.Description and Tags via UpdateAsync)
 
+### 2026-03-27 — Slices #7/#8 — Rescan & Progress Service (Round 2)
+
+**Branch:** `squad/8-rescan-progress`  
+**PR:** #16 (targeting dev)  
+**Status:** ✅ Completed, ready for merge  
+
+**What I built:**
+
+1. **ScanProgressService.cs** — Manages folder scan with progress reporting and cancellation
+   - `IProgress<ScanProgress>` pattern (thread-safe, standard .NET)
+   - `RunAsync(string folderPath, IProgress<ScanProgress> progress, CancellationToken cancellation)` orchestrates the scan
+   - Per-item tagging loop: calls `AiTaggingService.TagImageAsync()` per item vs. batch `TagAllUnprocessedAsync()`
+   - Folder resolution: `SCAN_FOLDER` env var with fallback to `Environment.SpecialFolder.MyPictures`
+   - Progress reporting: "Processing image X of Y" granular messages
+   - Handles cancellation gracefully (CancellationToken propagated throughout)
+
+2. **MainViewModel.cs enhancements**
+   - Secondary constructor: `MainViewModel(DatabaseService, ScanProgressService)` for DI/testing
+   - Existing parameterless constructor still works (creates services internally, no breaking changes)
+   - `RescanCommand` — triggers folder scan with progress UI updates
+   - `CancelScanCommand` — cancels in-progress scan
+   - `IsScanning` property (bool) — tracks whether scan is active
+   - Progress properties for UI binding (scanned count, total, current file, etc.)
+
+**Architecture decisions:**
+
+1. **IProgress<ScanProgress> pattern** — Standard .NET, auto-marshals to UI thread, testable with mock
+2. **Per-item tagging** — Enables granular progress vs. batch operation
+3. **Env var folder path** — Developer-friendly, no native folder picker dialog yet
+4. **Dual constructors** — Supports both production and test scenarios without breaking changes
+
+**Testing:**
+- Linus added 6 comprehensive tests to this branch (all passing)
+- Covers progress reporting, cancellation, folder resolution, per-item loop
+
+**Next steps:**
+- Merge PR #16 to dev
+- Livingston's Slice #9 (Theming) ready for merge in parallel
+
+
 ### 2026-03-27 — Slice #6: AI Tagging Service (Stub + Real HTTP)
 
 **Branch:** `squad/6-ai-tagging-service`  

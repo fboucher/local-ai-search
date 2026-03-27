@@ -17,6 +17,7 @@ public sealed partial class MainPage : Page
         InitializeComponent();
         var filePicker = new FilePickerService();
         ViewModel = new MainViewModel(new DatabaseService(), filePicker);
+        Loaded += (_, _) => filePicker.XamlRoot = this.XamlRoot;
     }
     
     private void OnThumbnailSelected(object sender, SelectionChangedEventArgs e)

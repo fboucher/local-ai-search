@@ -223,3 +223,36 @@ var files = await picker.PickMultipleFilesAsync();
 - `HorizontalScrollMode = ScrollMode.Disabled` on ScrollViewer to prevent horizontal overflow
 
 **Build Result:** ✅ 0 errors, 0 warnings
+
+
+### Browse Button Fix + Image Thumbnails — 2026-06-XX
+
+**Bug fixed:** Browse button in ContentDialog doing nothing; grid showing emoji placeholders instead of real images.
+
+**Changes Made:**
+
+**Fix 1 — Browse button reliability (FilePickerService.cs):**
+- Added `browseBtn.Tapped` handler alongside existing `browseBtn.Click` — Tapped events fire more reliably in Uno GTK ContentDialogs
+- Added `folderBox.TextChanged` handler that calls `RefreshList` when path length > 3 characters — user gets live auto-refresh as they type
+- Auto-browse on open was already wired (`RefreshList` before `ShowAsync`) and confirmed working
+
+**Fix 2 — Image thumbnails (MediaItemViewModel.cs + MainPage.xaml):**
+- Added lazy-loaded `ImageSource` property to `MediaItemViewModel` using `BitmapImage` with `DecodePixelWidth = 160` (reduces memory)
+- Loads from `FilePath` only when file exists; returns null otherwise (graceful fallback — Image element shows nothing)
+- Replaced old `Thumbnail` placeholder property
+- Updated `MainPage.xaml` DataTemplate: added `xmlns:vm` namespace, `x:DataType="vm:MediaItemViewModel"` on DataTemplate, replaced emoji-in-Border template with real 160×160 Grid showing `<Image Source="{x:Bind ImageSource}"/>` + dark-overlay filename label
+- `FileName` property was already present ✅
+- `AppCardBackground` ThemeResource confirmed defined in App.xaml ✅
+
+**MVVM Patterns:**
+- Lazy `ImageSource` is computed property on ViewModel — no code-behind
+- `{x:Bind ImageSource}` with `x:DataType` required for compile-time binding in DataTemplate
+- `DecodePixelWidth` on BitmapImage is critical for grid performance (avoids loading full-res into memory for thumbnails)
+
+**GTK Lessons:**
+- `browseBtn.Tapped` more reliable than `Click` for custom controls inside ContentDialog on GTK
+- `TextChanged` auto-refresh eliminates need for button click entirely — more intuitive UX
+- `x:DataType` on DataTemplate is required for `{x:Bind}` inside GridView ItemTemplate; without it the source generator cannot resolve property paths
+
+**Build Result:** ✅ 0 errors, 0 warnings  
+**Commit:** f2ba0ae on dev

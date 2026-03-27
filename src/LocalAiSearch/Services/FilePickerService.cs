@@ -17,6 +17,8 @@ public class FilePickerService : IFilePickerService
     private static readonly HashSet<string> SupportedExtensions = new(StringComparer.OrdinalIgnoreCase)
     { ".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp" };
 
+    public XamlRoot? XamlRoot { get; set; }
+
     public async Task<IReadOnlyList<string>> PickImagesAsync()
     {
         var dialog = new ContentDialog
@@ -64,7 +66,12 @@ public class FilePickerService : IFilePickerService
         root.Children.Add(scroll);
 
         dialog.Content = root;
-        dialog.XamlRoot = (Application.Current as App)?.MainWindow?.Content?.XamlRoot;
+        dialog.XamlRoot = XamlRoot;
+        if (dialog.XamlRoot == null)
+        {
+            await Console.Error.WriteLineAsync("[FilePickerService] XamlRoot is null — cannot show dialog.");
+            return Array.Empty<string>();
+        }
 
         var checkedPaths = new HashSet<string>();
 
